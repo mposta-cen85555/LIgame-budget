@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alena: Finanční simulátor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#2870ED',
+                        'brand-apple': '#0CB43F',
+                        'brand-orange': '#FF6130',
+                        'brand-stone': '#245375',
+                        'brand-anthracite': '#303030',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        input[type=range] { -webkit-appearance: none; background: #E5E7EB; height: 8px; border-radius: 999px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 999px; background: #2870ED; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .universe-card { transition: all 0.3s ease; }
+
+        /* Animace pro SVG křivku */
+        #burn-path { transition: d 0.4s ease; }
+
+        /* Pulzující varování */
+        @keyframes pulse-warn {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .pulse-warn { animation: pulse-warn 1.2s ease-in-out infinite; }
+
+        /* Modal overlay */
+        #modal-overlay { transition: opacity 0.3s ease; }
+        #modal-overlay.hidden { opacity: 0; pointer-events: none; }
+        #modal-content { transition: transform 0.3s ease, opacity 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 font-sans text-brand-anthracite">
+
+    <!-- ═══════════════════════════════════════════════════
+         TOP STATUS CARDS
+    ═══════════════════════════════════════════════════ -->
+    <div class="max-w-5xl mx-auto mb-6 grid grid-cols-2 gap-4">
+
+        <!-- Karta: BEZ POJIŠTĚNÍ -->
+        <div id="status-bad" class="bg-brand-orange text-white p-4 rounded-2xl shadow-lg transition-colors duration-300">
+            <p class="text-xs font-bold uppercase opacity-80">Bez pojištění Aleně zbývá vyřešit:</p>
+            <h2 id="balance-val" class="text-3xl font-black">-19 000 Kč</h2>
+        </div>
+
+        <!-- Karta: S POJIŠTĚNÍM -->
+        <div class="bg-brand-apple text-white p-4 rounded-2xl shadow-lg flex flex-col justify-center">
+            <p class="text-xs font-bold uppercase opacity-80">S pojištěním je Alena v pohodě:</p>
+            <h2 class="text-3xl font-black">+0 Kč</h2>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         KŘIVKA ŽIVOTNÍ ÚROVNĚ (SVG)
+    ═══════════════════════════════════════════════════ -->
+    <div class="max-w-5xl mx-auto mb-6 bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+
+        <!-- Nadpis -->
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div>
+                <p class="text-xs font-bold uppercase text-brand-stone opacity-70">Křivka životní úrovně rodiny</p>
+                <p class="text-sm font-bold">
+                    Aktuální životní úroveň:
+                    <span id="quality-label" class="text-brand-apple font-black">100 %</span>
+                </p>
+            </div>
+            <div id="quality-badge" class="hidden text-xs font-black bg-orange-100 text-brand-orange py-1 px-3 rounded-full pulse-warn">
+                ⚠️ Výrazný pokles životní úrovně
+            </div>
+        </div>
+
+        <!-- SVG graf: křivka životní úrovně -->
+        <div class="mt-2">
+            <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Životní úroveň během 10 měsíců léčby</p>
+            <svg id="burn-svg" viewBox="0 0 480 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-24 rounded-xl overflow-hidden">
+                <defs>
+                    <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#0CB43F" stop-opacity="0.18"/>
+                        <stop offset="100%" stop-color="#FF6130" stop-opacity="0.04"/>
+                    </linearGradient>
+                </defs>
+                <!-- Plocha pod křivkou -->
+                <path id="burn-area" d="M0,6 L480,6 L480,94 L0,94 Z" fill="url(#burnGrad)"/>
+                <!-- Referenční linie -->
+                <line x1="0" y1="6" x2="480" y2="6" stroke="#E5E7EB" stroke-width="0.5" stroke-dasharray="4"/>
+                <line x1="0" y1="50" x2="480" y2="50" stroke="#E5E7EB" stroke-width="0.5" stroke-dasharray="4"/>
+                <line x1="0" y1="94" x2="480" y2="94" stroke="#E5E7EB" stroke-width="1"/>
+                <!-- Popisky osy Y -->
+                <text x="6" y="14" font-size="9" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">100 %</text>
+                <text x="6" y="54" font-size="9" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">50 %</text>
+                <text x="6" y="92" font-size="9" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">0 %</text>
+                <!-- Křivka -->
+                <path id="burn-path" d="" fill="none" stroke="#0CB43F" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Měsíční ticky -->
+                <g id="tick-group"></g>
+            </svg>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         DVĚ VARIANTY
+    ═══════════════════════════════════════════════════ -->
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- BEZ POJIŠTĚNÍ -->
+        <div class="universe-card bg-white p-6 rounded-3xl border-2 border-brand-orange shadow-sm">
+            <div class="flex items-center gap-3 mb-1">
+                <span class="p-2 bg-orange-100 text-brand-orange rounded-full">⚠️</span>
+                <h3 class="font-bold text-lg">Bez pojištění: Škrtáme, co se dá</h3>
+            </div>
+            <p id="universe-subtitle" class="text-xs font-bold text-brand-orange mb-5 ml-1 pl-11">
+                Měsíční deficit k řešení: <span id="deficit-display">19 000</span> Kč
+            </p>
+
+            <div class="space-y-5">
+                <!-- Hypotéka – fixní -->
+                <div class="opacity-50">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Bydlení (Hypotéka)</span>
+                        <span class="text-sm font-bold">17 000 Kč</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 rounded-full w-full"></div>
+                    <p class="text-[10px] mt-1 text-red-500 font-bold uppercase">Nelze škrtat (střecha nad hlavou)</p>
+                </div>
+
+                <!-- Jídlo -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Jídlo</span>
+                        <span id="food-val" class="text-sm font-bold text-brand-blue">10 000 Kč</span>
+                    </div>
+                    <input type="range" id="food-slider" min="4000" max="10000" step="500" value="10000" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>min. 4 000 Kč</span><span>max. 10 000 Kč</span>
+                    </div>
+                </div>
+
+                <!-- Doprava (auto) -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Doprava (auto)</span>
+                        <span id="transport-val" class="text-sm font-bold text-brand-blue">4 500 Kč</span>
+                    </div>
+                    <input type="range" id="transport-slider" min="1000" max="4500" step="500" value="4500" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>min. 1 000 Kč</span><span>max. 4 500 Kč</span>
+                    </div>
+                </div>
+
+                <!-- Telefon, TV, Internet -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Telefon, TV, Internet</span>
+                        <span id="telecom-val" class="text-sm font-bold text-brand-blue">2 000 Kč</span>
+                    </div>
+                    <input type="range" id="telecom-slider" min="500" max="2000" step="250" value="2000" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>min. 500 Kč</span><span>max. 2 000 Kč</span>
+                    </div>
+                </div>
+
+                <!-- Spoření a investice -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Spoření a investice</span>
+                        <span id="saving-val" class="text-sm font-bold text-brand-blue">2 000 Kč</span>
+                    </div>
+                    <input type="range" id="saving-slider" min="0" max="2000" step="500" value="2000" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>min. 0 Kč</span><span>max. 2 000 Kč</span>
+                    </div>
+                </div>
+
+                <!-- Cestování a dovolená -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Cestování a dovolená</span>
+                        <span id="travel-val" class="text-sm font-bold text-brand-blue">3 000 Kč</span>
+                    </div>
+                    <input type="range" id="travel-slider" min="0" max="3000" step="500" value="3000" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>min. 0 Kč</span><span>max. 3 000 Kč</span>
+                    </div>
+                </div>
+
+                <!-- Zábava a koníčky -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Zábava a koníčky</span>
+                        <span id="fun-val" class="text-sm font-bold text-brand-blue">1 500 Kč</span>
+                    </div>
+                    <input type="range" id="fun-slider" min="0" max="1500" step="250" value="1500" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>min. 0 Kč</span><span>max. 1 500 Kč</span>
+                    </div>
+                </div>
+
+                <!-- Nový zdroj příjmu: Rodiče -->
+                <div class="pt-3 border-t border-gray-100">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-bold">Poprosit rodiče o finanční pomoc</span>
+                        <span id="parents-val" class="text-sm font-bold text-brand-blue">0 Kč</span>
+                    </div>
+                    <input type="range" id="parents-slider" min="0" max="5000" step="500" value="0" class="w-full">
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>0 Kč</span><span>max. 5 000 Kč</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- S POJIŠTĚNÍM -->
+        <div class="universe-card bg-white p-6 rounded-3xl border-2 border-brand-apple shadow-sm relative overflow-hidden">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="p-2 bg-green-100 text-brand-apple rounded-full">✅</span>
+                <h3 class="font-bold text-lg">S pojištěním: Klid na uzdravení</h3>
+            </div>
+
+            <div class="space-y-8 py-4">
+                <div class="p-4 bg-green-50 rounded-2xl border border-brand-apple/20">
+                    <p class="text-sm leading-relaxed">Díky pojištění Aleně přišlo plnění <strong>19 000 Kč měsíčně</strong>, které pokrylo celý výpadek příjmu i náklady na léčbu.</p>
+                </div>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-3 text-sm font-medium">✨ Alena nemusí omezovat jízdu autem.</li>
+                    <li class="flex items-center gap-3 text-sm font-medium">✨ Rodina nesnížila kvalitu jídla.</li>
+                    <li class="flex items-center gap-3 text-sm font-medium">✨ Spoření a investice běží dál.</li>
+                    <li class="flex items-center gap-3 text-sm font-medium">✨ Nemusí prosit rodiče o peníze.</li>
+                </ul>
+                <div class="mt-8 pt-8 border-t text-center">
+                    <p class="text-xs font-bold text-brand-stone uppercase">Životní úroveň zachována na 100 %</p>
+                    <div class="flex justify-center gap-1 mt-2">
+                        <div class="w-8 h-1 bg-brand-apple rounded-full"></div>
+                        <div class="w-8 h-1 bg-brand-apple rounded-full"></div>
+                        <div class="w-8 h-1 bg-brand-apple rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         CTA TLAČÍTKO
+    ═══════════════════════════════════════════════════ -->
+    <div class="max-w-5xl mx-auto mt-8 flex justify-center">
+        <button id="btn-next" class="bg-gray-300 text-white font-black py-4 px-12 rounded-full cursor-not-allowed transition-all duration-300">
+            CHCI POMOCI ALENĚ
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         MODÁLNÍ OKNO – SHRNUTÍ
+    ═══════════════════════════════════════════════════ -->
+    <div id="modal-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div id="modal-content" class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-black text-brand-stone mb-2">Co to znamenalo pro Alenu</h2>
+            <p class="text-sm text-gray-500 mb-6">Jelikož Alena neměla životní pojištění, musela pro zachování střechy nad hlavou udělat tyto ústupky:</p>
+            <ul id="modal-list" class="space-y-3 mb-8">
+                <!-- Dynamicky generované odrážky -->
+            </ul>
+            <div class="text-center">
+                <button id="btn-password" class="bg-brand-stone text-white font-black py-3 px-10 rounded-full transition-all duration-300 hover:opacity-90">
+                    Ukázat heslo pro pokračování v kurzu
+                </button>
+                <div id="password-reveal" class="hidden mt-6">
+                    <p class="text-xs text-gray-400 uppercase font-bold mb-2">Heslo pro pokračování:</p>
+                    <p class="text-3xl font-black text-brand-apple tracking-widest">POJISTENICHRANI</p>
+                </div>
+            </div>
+            <button id="btn-close-modal" class="mt-6 w-full text-center text-sm text-gray-400 hover:text-gray-600 font-bold">Zavřít</button>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════
+         JAVASCRIPT – byznysová logika
+    ═══════════════════════════════════════════════════ -->
+    <script>
+    (function () {
+        // ── Konstanty ────────────────────────────────────────────
+        const TARGET_DEFICIT = 19000; // celkový měsíční deficit k řešení (17k příjem + 2k léčba)
+
+        // Výchozí maxima jednotlivých kategorií (výdaje)
+        const FOOD_MAX      = 10000;
+        const TRANSPORT_MAX = 4500;
+        const TELECOM_MAX   = 2000;
+        const SAVING_MAX    = 2000;
+        const TRAVEL_MAX    = 3000;
+        const FUN_MAX       = 1500;
+
+        // Min hodnoty (pro výpočet max úspor)
+        const FOOD_MIN      = 4000;
+        const TRANSPORT_MIN = 1000;
+        const TELECOM_MIN   = 500;
+        const SAVING_MIN    = 0;
+        const TRAVEL_MIN    = 0;
+        const FUN_MIN       = 0;
+
+        // Max pomoc od rodičů
+        const PARENTS_MAX   = 5000;
+
+        // Celkový max adjustovatelný rozsah (pro quality of life)
+        const MAX_EXPENSE_RANGE = (FOOD_MAX - FOOD_MIN) + (TRANSPORT_MAX - TRANSPORT_MIN) +
+                                  (TELECOM_MAX - TELECOM_MIN) + (SAVING_MAX - SAVING_MIN) +
+                                  (TRAVEL_MAX - TRAVEL_MIN) + (FUN_MAX - FUN_MIN);
+        const MAX_TOTAL_SACRIFICE = MAX_EXPENSE_RANGE + PARENTS_MAX;
+
+        // ── Prvky ────────────────────────────────────────────────
+        const foodSlider      = document.getElementById('food-slider');
+        const transportSlider = document.getElementById('transport-slider');
+        const telecomSlider   = document.getElementById('telecom-slider');
+        const savingSlider    = document.getElementById('saving-slider');
+        const travelSlider    = document.getElementById('travel-slider');
+        const funSlider       = document.getElementById('fun-slider');
+        const parentsSlider   = document.getElementById('parents-slider');
+
+        const foodValEl      = document.getElementById('food-val');
+        const transportValEl = document.getElementById('transport-val');
+        const telecomValEl   = document.getElementById('telecom-val');
+        const savingValEl    = document.getElementById('saving-val');
+        const travelValEl    = document.getElementById('travel-val');
+        const funValEl       = document.getElementById('fun-val');
+        const parentsValEl   = document.getElementById('parents-val');
+
+        const balanceEl      = document.getElementById('balance-val');
+        const statusBadEl    = document.getElementById('status-bad');
+        const btnNext        = document.getElementById('btn-next');
+        const deficitDisplay = document.getElementById('deficit-display');
+
+        const qualityLabel   = document.getElementById('quality-label');
+        const qualityBadge   = document.getElementById('quality-badge');
+
+        const burnPath       = document.getElementById('burn-path');
+        const burnArea       = document.getElementById('burn-area');
+        const tickGroup      = document.getElementById('tick-group');
+
+        const modalOverlay   = document.getElementById('modal-overlay');
+        const modalList      = document.getElementById('modal-list');
+        const btnPassword    = document.getElementById('btn-password');
+        const passwordReveal = document.getElementById('password-reveal');
+        const btnCloseModal  = document.getElementById('btn-close-modal');
+
+        // SVG viewport
+        const SVG_W = 480;
+        const SVG_H = 100;
+        const Y_TOP = 6;    // y for 100%
+        const Y_BOT = 94;   // y for 0%
+
+        // ── Pomocné funkce ────────────────────────────────────────
+        function formatKc(val) {
+            return val.toLocaleString('cs-CZ') + ' Kč';
+        }
+
+        function pctToY(pct) {
+            // pct: 0–100, returns SVG y coordinate
+            return Y_BOT - ((pct / 100) * (Y_BOT - Y_TOP));
+        }
+
+        /**
+         * Překreslí SVG křivku životní úrovně.
+         * @param {number} qualityPct – aktuální životní úroveň (0–100)
+         */
+        function drawQualityCurve(qualityPct) {
+            tickGroup.innerHTML = '';
+
+            var months = 10;
+
+            // Multiplicative degradation: base quality × (1 − 0.10 × month/10)
+            // By month 10, quality is 90% of the base slider-derived value,
+            // simulating the cumulative psychological toll of sustained cuts.
+            var degradationFactor = 0.10;
+            var points = [];
+
+            for (var m = 0; m <= months; m++) {
+                var x = (m / months) * SVG_W;
+                // Gradual additional degradation over time
+                var timeFactor = 1 - (degradationFactor * (m / months));
+                var monthQuality = Math.max(0, qualityPct * timeFactor);
+                var y = pctToY(monthQuality);
+                points.push(x.toFixed(1) + ',' + y.toFixed(1));
+
+                // Month ticks
+                if (m > 0) {
+                    var tick = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    tick.setAttribute('x', x.toFixed(1));
+                    tick.setAttribute('y', SVG_H - 1);
+                    tick.setAttribute('font-size', '8');
+                    tick.setAttribute('fill', '#9CA3AF');
+                    tick.setAttribute('text-anchor', 'middle');
+                    tick.setAttribute('font-family', 'Inter,sans-serif');
+                    tick.textContent = m + 'm';
+                    tickGroup.appendChild(tick);
+                }
+            }
+
+            var d = 'M' + points.join(' L');
+            burnPath.setAttribute('d', d);
+
+            // Area under curve
+            var lastX = parseFloat(points[points.length - 1].split(',')[0]);
+            burnArea.setAttribute('d', 'M' + points.join(' L') + ' L' + lastX + ',' + Y_BOT + ' L0,' + Y_BOT + ' Z');
+
+            // Stroke & gradient color based on quality
+            if (qualityPct > 70) {
+                burnPath.style.stroke = '#0CB43F'; // green
+            } else if (qualityPct > 40) {
+                burnPath.style.stroke = '#FF6130'; // orange
+            } else {
+                burnPath.style.stroke = '#DC2626'; // red
+            }
+        }
+
+        // ── Hlavní update funkce ─────────────────────────────────
+        function update() {
+            // 1. Přečti hodnoty sliderů
+            var foodVal      = parseInt(foodSlider.value);
+            var transportVal = parseInt(transportSlider.value);
+            var telecomVal   = parseInt(telecomSlider.value);
+            var savingVal    = parseInt(savingSlider.value);
+            var travelVal    = parseInt(travelSlider.value);
+            var funVal       = parseInt(funSlider.value);
+            var parentsVal   = parseInt(parentsSlider.value);
+
+            // 2. Zobraz aktuální hodnoty
+            foodValEl.innerText      = formatKc(foodVal);
+            transportValEl.innerText = formatKc(transportVal);
+            telecomValEl.innerText   = formatKc(telecomVal);
+            savingValEl.innerText    = formatKc(savingVal);
+            travelValEl.innerText    = formatKc(travelVal);
+            funValEl.innerText       = formatKc(funVal);
+            parentsValEl.innerText   = formatKc(parentsVal);
+
+            // 3. Výpočet: kolik uživatel ušetřil / získal
+            var savedFromExpenses = (FOOD_MAX - foodVal) + (TRANSPORT_MAX - transportVal) +
+                                    (TELECOM_MAX - telecomVal) + (SAVING_MAX - savingVal) +
+                                    (TRAVEL_MAX - travelVal) + (FUN_MAX - funVal);
+            var totalSaved = savedFromExpenses + parentsVal;
+
+            // 4. Zbývající deficit
+            var remaining = TARGET_DEFICIT - totalSaved;
+
+            // 5. Status karta
+            if (remaining > 0) {
+                balanceEl.innerText = '-' + remaining.toLocaleString('cs-CZ') + ' Kč';
+                statusBadEl.style.backgroundColor = '#FF6130'; // brand-orange
+                btnNext.classList.remove('bg-brand-apple', 'cursor-pointer');
+                btnNext.classList.add('bg-gray-300', 'cursor-not-allowed');
+                btnNext.innerText = 'CHCI POMOCI ALENĚ';
+                btnNext.onclick = null;
+            } else {
+                balanceEl.innerText = 'VYROVNÁNO ✓';
+                statusBadEl.style.backgroundColor = '#245375'; // brand-stone
+                btnNext.classList.remove('bg-gray-300', 'cursor-not-allowed');
+                btnNext.classList.add('bg-brand-apple', 'cursor-pointer');
+                btnNext.innerText = 'POKRAČOVAT NA SHRNUTÍ →';
+                btnNext.onclick = openModal;
+            }
+
+            deficitDisplay.innerText = (remaining > 0 ? remaining : 0).toLocaleString('cs-CZ');
+
+            // 6. Životní úroveň (quality of life)
+            var totalSacrifice = savedFromExpenses + parentsVal;
+            var qualityPct = Math.max(0, Math.round(100 - ((totalSacrifice / MAX_TOTAL_SACRIFICE) * 100)));
+
+            qualityLabel.innerText = qualityPct + ' %';
+
+            if (qualityPct >= 80) {
+                qualityLabel.className = 'text-brand-apple font-black';
+                qualityBadge.classList.add('hidden');
+            } else if (qualityPct >= 50) {
+                qualityLabel.className = 'text-brand-orange font-black';
+                qualityBadge.classList.add('hidden');
+            } else {
+                qualityLabel.className = 'text-red-600 font-black';
+                qualityBadge.classList.remove('hidden');
+            }
+
+            // 7. SVG křivka životní úrovně
+            drawQualityCurve(qualityPct);
+        }
+
+        // ── Modální okno ─────────────────────────────────────────
+        function openModal() {
+            // Generuj dynamický seznam dopadů
+            modalList.innerHTML = '';
+
+            var foodVal      = parseInt(foodSlider.value);
+            var transportVal = parseInt(transportSlider.value);
+            var telecomVal   = parseInt(telecomSlider.value);
+            var savingVal    = parseInt(savingSlider.value);
+            var travelVal    = parseInt(travelSlider.value);
+            var funVal       = parseInt(funSlider.value);
+            var parentsVal   = parseInt(parentsSlider.value);
+
+            var impacts = [];
+
+            if (foodVal < FOOD_MAX) {
+                impacts.push('Pozastavila předplatná na stravovací služby a výrazně snížila kvalitu jídla.');
+            }
+            if (transportVal < TRANSPORT_MAX) {
+                impacts.push('Musela extrémně omezit jízdu autem a využívat MHD.');
+            }
+            if (telecomVal < TELECOM_MAX) {
+                impacts.push('Zrušila část předplatných a snížila tarif telefonu i internetu.');
+            }
+            if (savingVal < SAVING_MAX) {
+                impacts.push('Zastavila veškeré spoření a investice – budoucnost rodiny je nejistá.');
+            }
+            if (travelVal < TRAVEL_MAX) {
+                impacts.push('Zrušila veškeré plány na dovolenou a cestování.');
+            }
+            if (funVal < FUN_MAX) {
+                impacts.push('Vzdala se koníčků a zábavy – syn přestal chodit na kroužky.');
+            }
+            if (parentsVal > 0) {
+                impacts.push('Musela spolknout hrdost a požádat staré rodiče o finanční injekci.');
+            }
+
+            if (impacts.length === 0) {
+                impacts.push('Alena vyrovnala rozpočet bez výrazných ústupků.');
+            }
+
+            impacts.forEach(function(text) {
+                var li = document.createElement('li');
+                li.className = 'flex items-start gap-2 text-sm text-gray-700';
+                li.innerHTML = '<span class="text-brand-orange mt-0.5">•</span><span>' + text + '</span>';
+                modalList.appendChild(li);
+            });
+
+            // Reset password reveal
+            passwordReveal.classList.add('hidden');
+            btnPassword.classList.remove('hidden');
+
+            // Show modal
+            modalOverlay.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modalOverlay.classList.add('hidden');
+        }
+
+        // ── Event listenery ──────────────────────────────────────
+        document.querySelectorAll('input[type=range]').forEach(function(s) {
+            s.addEventListener('input', update);
+        });
+
+        btnPassword.addEventListener('click', function() {
+            passwordReveal.classList.remove('hidden');
+            btnPassword.classList.add('hidden');
+        });
+
+        btnCloseModal.addEventListener('click', closeModal);
+
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        // ── Inicializace ─────────────────────────────────────────
+        update();
+
+    })();
+    </script>
+</body>
+</html>
