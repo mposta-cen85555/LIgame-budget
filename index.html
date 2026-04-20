@@ -37,8 +37,8 @@
         .savings-toggle.active { background-color: #0CB43F; border-color: #0CB43F; }
         .savings-toggle.active .toggle-dot { transform: translateX(18px); }
         .toggle-dot { transition: transform 0.2s ease; }
-        .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.3); font-size: 11px; font-weight: 700; cursor: pointer; line-height: 1; flex-shrink: 0; }
-        .tooltip-box { display: none; position: absolute; z-index: 10; background: white; color: #303030; border: 1px solid #E5E7EB; border-radius: 12px; padding: 10px 12px; font-size: 11px; line-height: 1.5; box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-width: 300px; left: 4px; right: 4px; top: 100%; margin-top: 4px; }
+        .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.3); font-size: 14px; font-weight: 700; cursor: pointer; line-height: 1; flex-shrink: 0; position: absolute; top: 12px; right: 12px; }
+        .tooltip-box { display: none; position: absolute; z-index: 10; background: white; color: #303030; border: 1px solid #E5E7EB; border-radius: 12px; padding: 10px 12px; font-size: 11px; line-height: 1.5; box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-width: 300px; right: 12px; left: 12px; top: 42px; }
         .tooltip-box.visible { display: block; }
     </style>
 </head>
@@ -48,18 +48,14 @@
     <div class="max-w-5xl mx-auto mb-2 grid grid-cols-2 gap-3">
         <div id="status-bad" class="bg-brand-orange text-white p-3 rounded-xl shadow-lg transition-colors duration-300 relative">
             <p class="text-[10px] font-bold uppercase opacity-80">Bez pojištění Aleně zbývá vyřešit:</p>
-            <div class="flex items-center gap-2">
-                <h2 id="balance-val" class="text-2xl font-black">-14 000 Kč</h2>
-                <span class="info-btn" id="info-btn-left">i</span>
-            </div>
+            <h2 id="balance-val" class="text-2xl font-black">-14 000 Kč</h2>
+            <span class="info-btn" id="info-btn-left">i</span>
             <div id="tooltip-left" class="tooltip-box">Jak jsme to spočítali? Běžné výdaje 40&nbsp;000 Kč minus nemocenská 33&nbsp;000 Kč = deficit 7&nbsp;000 Kč. K tomu náklady na léčbu 70&nbsp;000 Kč rozpočítané do 10 měsíců = 7&nbsp;000 Kč/měsíc. Celkem chybí 14&nbsp;000 Kč měsíčně.</div>
         </div>
         <div class="bg-brand-apple text-white p-3 rounded-xl shadow-lg flex flex-col justify-center relative">
-            <div class="flex items-center justify-between">
-                <p class="text-[10px] font-bold uppercase opacity-80">S pojištěním je rodina v bezpečí:</p>
-                <span class="info-btn" id="info-btn-right">i</span>
-            </div>
+            <p class="text-[10px] font-bold uppercase opacity-80">S pojištěním je rodina v bezpečí:</p>
             <h2 class="text-2xl font-black">+0 Kč</h2>
+            <span class="info-btn" id="info-btn-right">i</span>
             <div id="tooltip-right" class="tooltip-box">Přehled sjednaných limitů: Základní smrt (10&nbsp;000 Kč), Doplňková smrt kles. (5&nbsp;040&nbsp;000 Kč), Invalidita 3.&nbsp;st. kles. (4&nbsp;160&nbsp;000 Kč), Invalidita 2.&nbsp;st. kles. (3&nbsp;536&nbsp;000 Kč), Invalidita 1.&nbsp;st. kles. (2&nbsp;912&nbsp;000 Kč), PN od 29.&nbsp;dne (350 Kč/den), Velmi vážná onemocnění (300&nbsp;000 Kč), Trvalé následky úrazu s progresí (900&nbsp;000 Kč), Úvěrový balíček (3&nbsp;500&nbsp;000 Kč).</div>
         </div>
     </div>
@@ -74,8 +70,8 @@
                     <span id="quality-label" class="text-brand-apple font-black">100 %</span>
                 </p>
             </div>
-            <div id="quality-badge" class="hidden text-[10px] font-black bg-orange-100 text-brand-orange py-0.5 px-2 rounded-full pulse-warn">
-                ⚠️ Výrazný pokles
+            <div id="quality-badge" class="hidden text-[10px] font-black bg-orange-100 text-brand-orange py-0.5 px-2 rounded-full pulse-warn flex items-center gap-1">
+                <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Výrazný pokles
             </div>
         </div>
         <svg id="burn-svg" viewBox="0 0 480 70" xmlns="http://www.w3.org/2000/svg" class="w-full h-16 rounded-lg overflow-hidden">
@@ -103,7 +99,7 @@
         <!-- BEZ POJIŠTĚNÍ -->
         <div class="universe-card bg-white p-4 rounded-2xl border-2 border-brand-orange shadow-sm">
             <div class="flex items-center gap-2 mb-1">
-                <span class="p-1 bg-orange-100 text-brand-orange rounded-full text-sm">⚠️</span>
+                <span class="p-1 bg-orange-100 text-brand-orange rounded-full text-sm"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
                 <h3 class="font-bold text-sm">Bez pojištění: Škrty v rozpočtu jsou nevyhnutelné</h3>
             </div>
             <p id="universe-subtitle" class="text-[10px] font-bold text-brand-orange mb-2 pl-8">
@@ -139,7 +135,7 @@
                         <span id="food-val" class="text-xs font-bold text-brand-blue">10 000 Kč</span>
                     </div>
                     <input type="range" id="food-slider" min="4000" max="10000" step="500" value="10000" class="w-full">
-                    <div id="food-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Horší kvalita potravin.</div>
+                    <div id="food-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Horší kvalita potravin.</div>
                 </div>
 
                 <!-- Doprava -->
@@ -149,7 +145,7 @@
                         <span id="transport-val" class="text-xs font-bold text-brand-blue">4 500 Kč</span>
                     </div>
                     <input type="range" id="transport-slider" min="1000" max="4500" step="500" value="4500" class="w-full">
-                    <div id="transport-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Méně cestování autem.</div>
+                    <div id="transport-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Méně cestování autem.</div>
                 </div>
 
                 <!-- Telefon, TV, Internet -->
@@ -159,7 +155,7 @@
                         <span id="telecom-val" class="text-xs font-bold text-brand-blue">2 000 Kč</span>
                     </div>
                     <input type="range" id="telecom-slider" min="500" max="2000" step="250" value="2000" class="w-full">
-                    <div id="telecom-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Omezení tarifů.</div>
+                    <div id="telecom-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Omezení tarifů.</div>
                 </div>
 
                 <!-- Spoření a investice -->
@@ -169,7 +165,7 @@
                         <span id="saving-val" class="text-xs font-bold text-brand-blue">2 000 Kč</span>
                     </div>
                     <input type="range" id="saving-slider" min="0" max="2000" step="500" value="2000" class="w-full">
-                    <div id="saving-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Budování rezervy se zastavilo.</div>
+                    <div id="saving-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Budování rezervy se zastavilo.</div>
                 </div>
 
                 <!-- Cestování -->
@@ -179,7 +175,7 @@
                         <span id="travel-val" class="text-xs font-bold text-brand-blue">3 000 Kč</span>
                     </div>
                     <input type="range" id="travel-slider" min="0" max="3000" step="500" value="3000" class="w-full">
-                    <div id="travel-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Na výlety nejsou peníze.</div>
+                    <div id="travel-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Na výlety nejsou peníze.</div>
                 </div>
 
                 <!-- Zábava -->
@@ -189,7 +185,7 @@
                         <span id="fun-val" class="text-xs font-bold text-brand-blue">1 500 Kč</span>
                     </div>
                     <input type="range" id="fun-slider" min="0" max="1500" step="250" value="1500" class="w-full">
-                    <div id="fun-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Šetření má dopad i na dětský kroužek.</div>
+                    <div id="fun-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Šetření má dopad i na dětský kroužek.</div>
                 </div>
 
                 <!-- Rodiče -->
@@ -199,7 +195,7 @@
                         <span id="parents-val" class="text-xs font-bold text-brand-blue">0 Kč</span>
                     </div>
                     <input type="range" id="parents-slider" min="0" max="5000" step="500" value="0" class="w-full">
-                    <div id="parents-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Alena nevěřila, že ještě bude prosit o výpomoc rodiče.</div>
+                    <div id="parents-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Alena nevěřila, že ještě bude prosit o výpomoc rodiče.</div>
                 </div>
             </div>
         </div>
@@ -207,25 +203,25 @@
         <!-- S POJIŠTĚNÍM -->
         <div class="universe-card bg-white p-4 rounded-2xl border-2 border-brand-apple shadow-sm relative overflow-hidden">
             <div class="flex items-center gap-2 mb-2">
-                <span class="p-1 bg-green-100 text-brand-apple rounded-full text-sm">✅</span>
+                <span class="p-1 bg-green-100 text-brand-apple rounded-full text-sm"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
                 <h3 class="font-bold text-sm">S pojištěním je rodina v bezpečí</h3>
             </div>
 
             <div class="space-y-3 py-1">
                 <div class="p-2.5 bg-green-50 rounded-xl border border-brand-apple/20">
                     <p class="text-[11px] font-bold text-brand-stone mb-1">Rozpad pojistného plnění:</p>
-                    <p class="text-[10px] leading-relaxed text-gray-600 mb-1">🏥 <strong>Velmi vážná onemocnění:</strong> 300 000 Kč jednorázově (pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva).</p>
-                    <p class="text-[10px] leading-relaxed text-gray-600">💊 <strong>Pracovní neschopnost:</strong> 350 Kč/den od 29. dne → průměrně <strong>9 660 Kč měsíčně</strong>.</p>
+                    <p class="text-[10px] leading-relaxed text-gray-600 mb-1"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-brand-stone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><strong>Velmi vážná onemocnění:</strong> 300 000 Kč jednorázově (pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva).</p>
+                    <p class="text-[10px] leading-relaxed text-gray-600"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-brand-stone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><strong>Pracovní neschopnost:</strong> 350 Kč/den od 29. dne → průměrně <strong>9 660 Kč měsíčně</strong>.</p>
                 </div>
                 <div class="p-2 bg-green-50/50 rounded-lg text-center">
                     <p class="text-[10px] text-brand-stone font-bold">Z pojištění Alena čerpá průměrně <span class="text-brand-apple">39 660 Kč/měs.</span></p>
                 </div>
                 <ul class="space-y-3">
-                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Alena nemusí omezovat jízdu autem.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Rodina nesnížila kvalitu jídla.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Spoření běží dál.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Nemusí prosit rodiče o peníze.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Úspory zůstávají nedotčené.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Alena nemusí omezovat jízdu autem.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Rodina nesnížila kvalitu jídla.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Spoření běží dál.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Nemusí prosit rodiče o peníze.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Úspory zůstávají nedotčené.</li>
                 </ul>
                 <div class="pt-2 border-t text-center">
                     <p class="text-[10px] font-bold text-brand-stone uppercase">Životní úroveň zachována na 100 %</p>
@@ -252,8 +248,9 @@
             <h2 class="text-xl font-black text-brand-stone mb-2">Co to znamenalo pro Alenu</h2>
             <p class="text-sm text-gray-500 mb-4">Jelikož Alena neměla životní pojištění, musela přistoupit k těmto ústupkům:</p>
             <div id="carousel-area" class="mb-6">
-                <div id="carousel-slide" class="bg-orange-50 border border-brand-orange/20 rounded-xl p-4 min-h-[60px] flex items-center justify-center text-center">
-                    <p id="carousel-text" class="text-sm font-bold text-brand-stone"></p>
+                <div id="carousel-slide" class="bg-orange-50 border border-brand-orange/20 rounded-xl p-4 min-h-[80px] flex flex-col items-center justify-center text-center">
+                    <svg class="w-8 h-8 text-brand-orange opacity-40 mb-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
+                    <p id="carousel-text" class="text-base font-bold text-brand-stone"></p>
                 </div>
                 <div class="flex items-center justify-between mt-3">
                     <p id="carousel-counter" class="text-[10px] text-gray-400 font-bold"></p>
