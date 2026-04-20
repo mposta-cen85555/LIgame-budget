@@ -45,10 +45,10 @@
     <div class="max-w-5xl mx-auto mb-2 grid grid-cols-2 gap-3">
         <div id="status-bad" class="bg-brand-orange text-white p-3 rounded-xl shadow-lg transition-colors duration-300">
             <p class="text-[10px] font-bold uppercase opacity-80">Bez pojištění Aleně zbývá vyřešit:</p>
-            <h2 id="balance-val" class="text-2xl font-black">-19 000 Kč</h2>
+            <h2 id="balance-val" class="text-2xl font-black">-14 000 Kč</h2>
         </div>
         <div class="bg-brand-apple text-white p-3 rounded-xl shadow-lg flex flex-col justify-center">
-            <p class="text-[10px] font-bold uppercase opacity-80">S pojištěním je Alena v pohodě:</p>
+            <p class="text-[10px] font-bold uppercase opacity-80">S pojištěním je rodina v bezpečí:</p>
             <h2 class="text-2xl font-black">+0 Kč</h2>
         </div>
     </div>
@@ -96,7 +96,7 @@
                 <h3 class="font-bold text-sm">Bez pojištění: Škrtáme, co se dá</h3>
             </div>
             <p id="universe-subtitle" class="text-[10px] font-bold text-brand-orange mb-2 pl-8">
-                Měsíční deficit k řešení: <span id="deficit-display">19 000</span> Kč
+                Měsíční deficit k řešení: <span id="deficit-display">14 000</span> Kč
             </p>
 
             <!-- Jednorázové úspory – toggle -->
@@ -128,7 +128,7 @@
                         <span id="food-val" class="text-xs font-bold text-brand-blue">10 000 Kč</span>
                     </div>
                     <input type="range" id="food-slider" min="4000" max="10000" step="500" value="10000" class="w-full">
-                    <div id="food-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Rodina výrazně snížila kvalitu jídla.</div>
+                    <div id="food-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Snížení kvality stravy, nákup levných náhražek.</div>
                 </div>
 
                 <!-- Doprava -->
@@ -138,7 +138,7 @@
                         <span id="transport-val" class="text-xs font-bold text-brand-blue">4 500 Kč</span>
                     </div>
                     <input type="range" id="transport-slider" min="1000" max="4500" step="500" value="4500" class="w-full">
-                    <div id="transport-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Alena musí jezdit MHD místo autem.</div>
+                    <div id="transport-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Prodej auta, nutnost využívat MHD i při nemoci.</div>
                 </div>
 
                 <!-- Telefon, TV, Internet -->
@@ -148,7 +148,7 @@
                         <span id="telecom-val" class="text-xs font-bold text-brand-blue">2 000 Kč</span>
                     </div>
                     <input type="range" id="telecom-slider" min="500" max="2000" step="250" value="2000" class="w-full">
-                    <div id="telecom-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Zrušeny tarify a předplatná.</div>
+                    <div id="telecom-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Zrušení internetu a všech TV tarifů.</div>
                 </div>
 
                 <!-- Spoření a investice -->
@@ -158,7 +158,7 @@
                         <span id="saving-val" class="text-xs font-bold text-brand-blue">2 000 Kč</span>
                     </div>
                     <input type="range" id="saving-slider" min="0" max="2000" step="500" value="2000" class="w-full">
-                    <div id="saving-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Budoucnost rodiny je nejistá.</div>
+                    <div id="saving-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Zastavení budování rezerv a studií pro děti.</div>
                 </div>
 
                 <!-- Cestování -->
@@ -168,7 +168,7 @@
                         <span id="travel-val" class="text-xs font-bold text-brand-blue">3 000 Kč</span>
                     </div>
                     <input type="range" id="travel-slider" min="0" max="3000" step="500" value="3000" class="w-full">
-                    <div id="travel-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Žádná dovolená ani výlety.</div>
+                    <div id="travel-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Konec veškerých výletů a společného času venku.</div>
                 </div>
 
                 <!-- Zábava -->
@@ -178,7 +178,7 @@
                         <span id="fun-val" class="text-xs font-bold text-brand-blue">1 500 Kč</span>
                     </div>
                     <input type="range" id="fun-slider" min="0" max="1500" step="250" value="1500" class="w-full">
-                    <div id="fun-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Syn přestal chodit na kroužky.</div>
+                    <div id="fun-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Odhlášení dětí z kroužků, izolace rodiny.</div>
                 </div>
 
                 <!-- Rodiče -->
@@ -188,30 +188,36 @@
                         <span id="parents-val" class="text-xs font-bold text-brand-blue">0 Kč</span>
                     </div>
                     <input type="range" id="parents-slider" min="0" max="5000" step="500" value="0" class="w-full">
-                    <div id="parents-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Prosí staré rodiče o peníze.</div>
+                    <div id="parents-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1">⚠ Finanční zátěž pro staré rodiče a pocit selhání.</div>
                 </div>
             </div>
         </div>
 
         <!-- S POJIŠTĚNÍM -->
         <div class="universe-card bg-white p-4 rounded-2xl border-2 border-brand-apple shadow-sm relative overflow-hidden">
-            <div class="flex items-center gap-2 mb-3">
+            <div class="flex items-center gap-2 mb-2">
                 <span class="p-1 bg-green-100 text-brand-apple rounded-full text-sm">✅</span>
-                <h3 class="font-bold text-sm">S pojištěním: Klid na uzdravení</h3>
+                <h3 class="font-bold text-sm">S pojištěním je rodina v bezpečí</h3>
             </div>
 
-            <div class="space-y-4 py-2">
-                <div class="p-3 bg-green-50 rounded-xl border border-brand-apple/20">
-                    <p class="text-xs leading-relaxed">Díky pojištění Aleně přišlo plnění <strong>19 000 Kč měsíčně</strong>, které pokrylo celý výpadek příjmu i náklady na léčbu.</p>
+            <div class="space-y-3 py-1">
+                <div class="p-2.5 bg-green-50 rounded-xl border border-brand-apple/20">
+                    <p class="text-[11px] font-bold text-brand-stone mb-1">Rozpad pojistného plnění:</p>
+                    <p class="text-[10px] leading-relaxed text-gray-600 mb-1">🏥 <strong>Velmi vážná onemocnění:</strong> 300 000 Kč jednorázově (pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva).</p>
+                    <p class="text-[10px] leading-relaxed text-gray-600">💊 <strong>Pracovní neschopnost:</strong> 350 Kč/den od 29. dne → průměrně <strong>9 660 Kč měsíčně</strong>.</p>
                 </div>
-                <ul class="space-y-2">
-                    <li class="flex items-center gap-2 text-xs font-medium">✨ Alena nemusí omezovat jízdu autem.</li>
-                    <li class="flex items-center gap-2 text-xs font-medium">✨ Rodina nesnížila kvalitu jídla.</li>
-                    <li class="flex items-center gap-2 text-xs font-medium">✨ Spoření a investice běží dál.</li>
-                    <li class="flex items-center gap-2 text-xs font-medium">✨ Nemusí prosit rodiče o peníze.</li>
-                    <li class="flex items-center gap-2 text-xs font-medium">✨ Úspory zůstávají nedotčené.</li>
+                <div class="p-2 bg-green-50/50 rounded-lg text-center">
+                    <p class="text-[10px] text-brand-stone font-bold">Pojišťovna posílá průměrně <span class="text-brand-apple">39 660 Kč/měs.</span></p>
+                    <p class="text-[9px] text-gray-400">Výdaje 40 000 Kč − rozdíl je zanedbatelný.</p>
+                </div>
+                <ul class="space-y-1.5">
+                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Alena nemusí omezovat jízdu autem.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Rodina nesnížila kvalitu jídla.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Spoření a investice běží dál.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Nemusí prosit rodiče o peníze.</li>
+                    <li class="flex items-center gap-2 text-[11px] font-medium">✨ Úspory zůstávají nedotčené.</li>
                 </ul>
-                <div class="pt-3 border-t text-center">
+                <div class="pt-2 border-t text-center">
                     <p class="text-[10px] font-bold text-brand-stone uppercase">Životní úroveň zachována na 100 %</p>
                     <div class="flex justify-center gap-1 mt-1">
                         <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
@@ -226,7 +232,7 @@
     <!-- CTA TLAČÍTKO -->
     <div class="max-w-5xl mx-auto mt-3 flex justify-center">
         <button id="btn-next" class="bg-gray-300 text-white font-black py-3 px-10 rounded-full cursor-not-allowed transition-all duration-300 text-sm">
-            CHCI POMOCI ALENĚ
+            Ještě musíš rozpočet dořešit
         </button>
     </div>
 
@@ -252,7 +258,7 @@
     <!-- JAVASCRIPT -->
     <script>
     (function () {
-        const TARGET_DEFICIT = 19000;
+        const TARGET_DEFICIT = 14000;
         const SAVINGS_TOTAL = 50000;  // jednorázové úspory
         const SAVINGS_MONTHS = 10;    // období rozpočítání
         const SAVINGS_MONTHLY = SAVINGS_TOTAL / SAVINGS_MONTHS; // = 5 000 Kč/měsíc
@@ -325,14 +331,16 @@
         function drawQualityCurve(qualityPct) {
             tickGroup.innerHTML = '';
             var months = 10;
-            // 10% additional degradation over 10 months: simulates cumulative
-            // psychological toll of sustained expense cuts on family well-being.
-            var degradationFactor = 0.10;
             var points = [];
 
             for (var m = 0; m <= months; m++) {
                 var x = (m / months) * SVG_W;
-                var timeFactor = 1 - (degradationFactor * (m / months));
+                // Quadratic drop: quality accelerates downward over time
+                // Formula: base × (1 − 0.25·t²) where t = month/totalMonths
+                var t = m / months;
+                // Quadratic degradation: timeFactor = 1 − 0.25·t² where t ∈ [0,1].
+                // At month 10 (t=1), quality = base × 0.75, giving a dramatic accelerating drop.
+                var timeFactor = 1 - 0.25 * t * t;
                 var monthQuality = Math.max(0, qualityPct * timeFactor);
                 var y = pctToY(monthQuality);
                 points.push(x.toFixed(1) + ',' + y.toFixed(1));
@@ -412,14 +420,14 @@
                 statusBadEl.style.backgroundColor = '#FF6130';
                 btnNext.classList.remove('bg-brand-apple', 'cursor-pointer');
                 btnNext.classList.add('bg-gray-300', 'cursor-not-allowed');
-                btnNext.innerText = 'CHCI POMOCI ALENĚ';
+                btnNext.innerText = 'Ještě musíš rozpočet dořešit';
                 btnNext.onclick = null;
             } else {
                 balanceEl.innerText = 'VYROVNÁNO ✓';
                 statusBadEl.style.backgroundColor = '#245375';
                 btnNext.classList.remove('bg-gray-300', 'cursor-not-allowed');
                 btnNext.classList.add('bg-brand-apple', 'cursor-pointer');
-                btnNext.innerText = 'POKRAČOVAT NA SHRNUTÍ →';
+                btnNext.innerText = 'Pokračovat na shrnutí →';
                 btnNext.onclick = openModal;
             }
 
@@ -462,25 +470,25 @@
                 impacts.push('Musela sáhnout do jednorázových úspor a rozpustit ' + SAVINGS_TOTAL.toLocaleString('cs-CZ') + ' Kč za ' + SAVINGS_MONTHS + ' měsíců.');
             }
             if (foodVal < FOOD_MAX) {
-                impacts.push('Pozastavila předplatná na stravovací služby a výrazně snížila kvalitu jídla.');
+                impacts.push('Snížení kvality stravy, nákup levných náhražek.');
             }
             if (transportVal < TRANSPORT_MAX) {
-                impacts.push('Musela extrémně omezit jízdu autem a využívat MHD.');
+                impacts.push('Prodej auta, nutnost využívat MHD i při nemoci.');
             }
             if (telecomVal < TELECOM_MAX) {
-                impacts.push('Zrušila část předplatných a snížila tarif telefonu i internetu.');
+                impacts.push('Zrušení internetu a všech TV tarifů.');
             }
             if (savingVal < SAVING_MAX) {
-                impacts.push('Zastavila veškeré spoření a investice – budoucnost rodiny je nejistá.');
+                impacts.push('Zastavení budování rezerv a studií pro děti.');
             }
             if (travelVal < TRAVEL_MAX) {
-                impacts.push('Zrušila veškeré plány na dovolenou a cestování.');
+                impacts.push('Konec veškerých výletů a společného času venku.');
             }
             if (funVal < FUN_MAX) {
-                impacts.push('Vzdala se koníčků a zábavy – syn přestal chodit na kroužky.');
+                impacts.push('Odhlášení dětí z kroužků, izolace rodiny.');
             }
             if (parentsVal > 0) {
-                impacts.push('Musela spolknout hrdost a požádat staré rodiče o finanční injekci.');
+                impacts.push('Finanční zátěž pro staré rodiče a pocit selhání.');
             }
 
             if (impacts.length === 0) {
