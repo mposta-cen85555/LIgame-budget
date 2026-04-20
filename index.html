@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alena: Finanční simulátor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,8 +86,8 @@
                     <p class="text-xs font-bold uppercase opacity-80 truncate">Bez pojištění Aleně zbývá vyřešit:</p>
                     <p id="balance-val" class="text-xl font-black leading-tight">-14 000 Kč</p>
                 </div>
-                <button class="info-btn" id="info-btn-left" aria-label="Jak jsme to spočítali" role="button" tabindex="0">i</button>
-                <div id="tooltip-left" class="tooltip-box">Jak jsme to spočítali? Běžné výdaje 40&nbsp;000 Kč minus nemocenská 33&nbsp;000 Kč = deficit 7&nbsp;000 Kč. K tomu náklady na léčbu 70&nbsp;000 Kč rozpočítané do 10 měsíců = 7&nbsp;000 Kč/měsíc. Celkem chybí 14&nbsp;000 Kč měsíčně.</div>
+                <button class="info-btn" id="info-btn-left" aria-label="Jak jsme to spočítali" aria-describedby="tooltip-left" role="button" tabindex="0">i</button>
+                <div id="tooltip-left" class="tooltip-box" role="tooltip">Jak jsme to spočítali? Běžné výdaje 40&nbsp;000 Kč minus nemocenská 33&nbsp;000 Kč = deficit 7&nbsp;000 Kč. K tomu náklady na léčbu 70&nbsp;000 Kč rozpočítané do 10 měsíců = 7&nbsp;000 Kč/měsíc. Celkem chybí 14&nbsp;000 Kč měsíčně.</div>
             </div>
 
             <!-- Quality of Life -->
@@ -129,8 +129,8 @@
                     <p class="text-xs font-bold uppercase opacity-80">S pojištěním je rodina v bezpečí:</p>
                     <p class="text-xl font-black leading-tight">+0 Kč</p>
                 </div>
-                <button class="info-btn" id="info-btn-right" aria-label="Detail pojištění" role="button" tabindex="0">i</button>
-                <div id="tooltip-right" class="tooltip-box">Přehled sjednaných limitů: Základní smrt (10&nbsp;000 Kč), Doplňková smrt kles. (5&nbsp;040&nbsp;000 Kč), Invalidita 3.&nbsp;st. kles. (4&nbsp;160&nbsp;000 Kč), Invalidita 2.&nbsp;st. kles. (3&nbsp;536&nbsp;000 Kč), Invalidita 1.&nbsp;st. kles. (2&nbsp;912&nbsp;000 Kč), PN od 29.&nbsp;dne (350 Kč/den), Velmi vážná onemocnění (300&nbsp;000 Kč), Trvalé následky úrazu s progresí (900&nbsp;000 Kč), Úvěrový balíček (3&nbsp;500&nbsp;000 Kč).</div>
+                <button class="info-btn" id="info-btn-right" aria-label="Detail pojištění" aria-describedby="tooltip-right" role="button" tabindex="0">i</button>
+                <div id="tooltip-right" class="tooltip-box" role="tooltip">Přehled sjednaných limitů: Základní smrt (10&nbsp;000 Kč), Doplňková smrt kles. (5&nbsp;040&nbsp;000 Kč), Invalidita 3.&nbsp;st. kles. (4&nbsp;160&nbsp;000 Kč), Invalidita 2.&nbsp;st. kles. (3&nbsp;536&nbsp;000 Kč), Invalidita 1.&nbsp;st. kles. (2&nbsp;912&nbsp;000 Kč), PN od 29.&nbsp;dne (350 Kč/den), Velmi vážná onemocnění (300&nbsp;000 Kč), Trvalé následky úrazu s progresí (900&nbsp;000 Kč), Úvěrový balíček (3&nbsp;500&nbsp;000 Kč).</div>
             </div>
 
             <!-- CTA Button -->
@@ -186,7 +186,7 @@
                             <span id="food-val" class="text-sm font-bold text-brand-blue">10 000 Kč</span>
                         </div>
                         <input type="range" id="food-slider" min="4000" max="10000" step="500" value="10000" class="w-full" aria-label="Rozpočet na jídlo">
-                        <div id="food-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Horší kvalita potravin.</span></div>
+                        <div id="food-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Horší kvalita potravin.</span></div>
                     </div>
 
                     <!-- Doprava -->
@@ -196,7 +196,7 @@
                             <span id="transport-val" class="text-sm font-bold text-brand-blue">4 500 Kč</span>
                         </div>
                         <input type="range" id="transport-slider" min="1000" max="4500" step="500" value="4500" class="w-full" aria-label="Rozpočet na dopravu">
-                        <div id="transport-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Méně cestování autem.</span></div>
+                        <div id="transport-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Méně cestování autem.</span></div>
                     </div>
 
                     <!-- Telefon, TV, Internet -->
@@ -206,7 +206,7 @@
                             <span id="telecom-val" class="text-sm font-bold text-brand-blue">2 000 Kč</span>
                         </div>
                         <input type="range" id="telecom-slider" min="500" max="2000" step="250" value="2000" class="w-full" aria-label="Rozpočet na telefon, TV, internet">
-                        <div id="telecom-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Omezení tarifů.</span></div>
+                        <div id="telecom-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Omezení tarifů.</span></div>
                     </div>
 
                     <!-- Spoření -->
@@ -216,7 +216,7 @@
                             <span id="saving-val" class="text-sm font-bold text-brand-blue">2 000 Kč</span>
                         </div>
                         <input type="range" id="saving-slider" min="0" max="2000" step="500" value="2000" class="w-full" aria-label="Rozpočet na spoření">
-                        <div id="saving-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Budování rezervy se zastavilo.</span></div>
+                        <div id="saving-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Budování rezervy se zastavilo.</span></div>
                     </div>
 
                     <!-- Cestování -->
@@ -226,7 +226,7 @@
                             <span id="travel-val" class="text-sm font-bold text-brand-blue">3 000 Kč</span>
                         </div>
                         <input type="range" id="travel-slider" min="0" max="3000" step="500" value="3000" class="w-full" aria-label="Rozpočet na cestování">
-                        <div id="travel-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Na výlety nejsou peníze.</span></div>
+                        <div id="travel-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Na výlety nejsou peníze.</span></div>
                     </div>
 
                     <!-- Zábava -->
@@ -236,7 +236,7 @@
                             <span id="fun-val" class="text-sm font-bold text-brand-blue">1 500 Kč</span>
                         </div>
                         <input type="range" id="fun-slider" min="0" max="1500" step="250" value="1500" class="w-full" aria-label="Rozpočet na zábavu">
-                        <div id="fun-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Šetření má dopad i na dětský kroužek.</span></div>
+                        <div id="fun-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Šetření má dopad i na dětský kroužek.</span></div>
                     </div>
 
                     <!-- Rodiče -->
@@ -246,7 +246,7 @@
                             <span id="parents-val" class="text-sm font-bold text-brand-blue">0 Kč</span>
                         </div>
                         <input type="range" id="parents-slider" min="0" max="5000" step="500" value="0" class="w-full" aria-label="Pomoc od rodičů">
-                        <div id="parents-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Alena nevěřila, že ještě bude prosit o výpomoc rodiče.</span></div>
+                        <div id="parents-warn" class="slider-warning" role="status"><svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Alena nevěřila, že ještě bude prosit o výpomoc rodiče.</span></div>
                     </div>
 
                 </div>
@@ -368,7 +368,7 @@
     </div>
 </div>
 
-<p id="carousel-text" class="hidden"></p>
+<span id="carousel-text" class="hidden"></span>
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
@@ -419,9 +419,6 @@
     var btnPassword = document.getElementById('btn-password');
     var passwordReveal = document.getElementById('password-reveal');
     var btnCloseModal = document.getElementById('btn-close-modal');
-    var carouselText = document.getElementById('carousel-text');
-    var carouselCounter = document.getElementById('carousel-counter');
-    var btnCarouselNext = document.getElementById('btn-carousel-next');
     var carouselArea = document.getElementById('carousel-area');
     var carouselFinal = document.getElementById('carousel-final');
     var infoBtnLeft = document.getElementById('info-btn-left');
@@ -442,7 +439,6 @@
     var cardParents = document.getElementById('card-parents');
 
     var carouselImpacts = [];
-    var carouselIndex = 0;
 
     var foodWarn = document.getElementById('food-warn');
     var transportWarn = document.getElementById('transport-warn');
@@ -679,26 +675,15 @@
         }).join('');
         carouselSlideEl.innerHTML = listHtml;
 
-        carouselCounter.textContent = carouselImpacts.length + ' ústupků celkem';
-        btnCarouselNext.classList.add('hidden');
+        var counterEl = document.getElementById('carousel-counter');
+        if (counterEl) counterEl.textContent = carouselImpacts.length + ' ústupků celkem';
+        var nextBtn = document.getElementById('btn-carousel-next');
+        if (nextBtn) nextBtn.classList.add('hidden');
         carouselArea.classList.remove('hidden');
         carouselFinal.classList.remove('hidden');
         passwordReveal.classList.add('hidden');
         btnPassword.classList.remove('hidden');
         modalOverlay.classList.remove('hidden');
-    }
-
-    function showCarouselSlide() {
-        carouselText.textContent = carouselImpacts[carouselIndex];
-        carouselCounter.textContent = (carouselIndex + 1) + ' / ' + carouselImpacts.length;
-
-        if (carouselIndex >= carouselImpacts.length - 1) {
-            btnCarouselNext.classList.add('hidden');
-            carouselFinal.classList.remove('hidden');
-        } else {
-            btnCarouselNext.classList.remove('hidden');
-            carouselFinal.classList.add('hidden');
-        }
     }
 
     function closeModal() {
@@ -725,13 +710,6 @@
     btnPassword.addEventListener('click', function() {
         passwordReveal.classList.remove('hidden');
         btnPassword.classList.add('hidden');
-    });
-
-    btnCarouselNext.addEventListener('click', function() {
-        if (carouselIndex < carouselImpacts.length - 1) {
-            carouselIndex++;
-            showCarouselSlide();
-        }
     });
 
     btnCloseModal.addEventListener('click', closeModal);
