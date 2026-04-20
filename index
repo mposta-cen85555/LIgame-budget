@@ -221,7 +221,7 @@
     <script>
     (function () {
         // ── Konstanty ────────────────────────────────────────────
-        const NEMOCENSKA   = 33000;   // příjem při pracovní neschopnosti
+        const NEMOCENSKA   = 23000;   // příjem při pracovní neschopnosti
         const HYPOTEKA     = 17000;   // fixní výdaj, nelze škrtat
         const REZERVA      = 400000;  // celková rezerva Aleny
         const TARGET_DEF   = 17000;   // deficit, který je třeba vyrovnat slidery
