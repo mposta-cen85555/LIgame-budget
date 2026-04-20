@@ -2,9 +2,9 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alena: Finanční simulátor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -23,591 +23,749 @@
         }
     </script>
     <style>
-        input[type=range] { -webkit-appearance: none; background: #E5E7EB; height: 6px; border-radius: 999px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 999px; background: #2870ED; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .universe-card { transition: all 0.3s ease; }
+        html, body { height: 100%; overflow: hidden; }
+
+        /* Slider - touch-friendly */
+        input[type=range] { -webkit-appearance: none; background: #E5E7EB; height: 8px; border-radius: 999px; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 28px; width: 28px; border-radius: 999px; background: #2870ED; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+        input[type=range]:focus { outline: 2px solid #2870ED; outline-offset: 2px; border-radius: 999px; }
+
+        /* Transitions */
         #burn-path { transition: d 0.4s ease; }
-        @keyframes pulse-warn { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes pulse-warn { 0%,100%{ opacity:1; } 50%{ opacity:.6; } }
         .pulse-warn { animation: pulse-warn 1.2s ease-in-out infinite; }
+
+        /* Modal overlay */
         #modal-overlay { transition: opacity 0.3s ease; }
         #modal-overlay.hidden { opacity: 0; pointer-events: none; }
-        .slider-warning { transition: all 0.3s ease; max-height: 0; overflow: hidden; opacity: 0; }
-        .slider-warning.visible { max-height: 28px; opacity: 1; }
+
+        /* Slider warnings - show as small icon badge in card */
+        .slider-warning { display: none; position: absolute; top: 6px; right: 6px; color: #FF6130; }
+        .slider-warning.visible { display: block; }
+        .slider-warning .warn-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+        /* Savings toggle */
         .savings-toggle { transition: all 0.2s ease; }
         .savings-toggle.active { background-color: #0CB43F; border-color: #0CB43F; }
-        .savings-toggle.active .toggle-dot { transform: translateX(18px); }
+        .savings-toggle.active .toggle-dot { transform: translateX(24px); }
         .toggle-dot { transition: transform 0.2s ease; }
-        .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.3); font-size: 14px; font-weight: 700; cursor: pointer; line-height: 1; flex-shrink: 0; position: absolute; top: 12px; right: 12px; }
-        .tooltip-box { display: none; position: absolute; z-index: 10; background: white; color: #303030; border: 1px solid #E5E7EB; border-radius: 12px; padding: 10px 12px; font-size: 11px; line-height: 1.5; box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-width: 300px; right: 12px; left: 12px; top: 42px; }
+
+        /* Info buttons - touch friendly 44px */
+        .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; cursor: pointer; line-height: 1; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3); transition: background 0.2s; }
+        .info-btn:hover, .info-btn:focus { background: rgba(255,255,255,0.35); }
+        .info-btn:focus { outline: 2px solid white; outline-offset: 2px; }
+
+        /* Tooltips - popover style for touch */
+        .tooltip-box { display: none; position: absolute; z-index: 50; background: white; color: #303030; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; font-size: 14px; line-height: 1.6; box-shadow: 0 8px 32px rgba(0,0,0,0.16); max-width: 380px; width: max-content; top: 100%; right: 0; margin-top: 8px; }
         .tooltip-box.visible { display: block; }
+
+        /* Budget card */
+        .budget-card { background: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 10px 12px; position: relative; transition: border-color 0.2s, background-color 0.2s; }
+        .budget-card.has-cut { border-color: #FF6130; background: #FFF7ED; }
+
+        /* Impact item in right panel */
+        .impact-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; background: #FFF7ED; border-radius: 8px; font-size: 13px; color: #303030; border-left: 3px solid #FF6130; }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
     </style>
 </head>
-<body class="bg-gray-50 p-2 font-sans text-brand-anthracite">
+<body class="bg-gray-100 font-sans text-brand-anthracite h-full overflow-hidden">
 
-    <!-- TOP STATUS CARDS -->
-    <div class="max-w-5xl mx-auto mb-2 grid grid-cols-2 gap-3">
-        <div id="status-bad" class="bg-brand-orange text-white p-3 rounded-xl shadow-lg transition-colors duration-300 relative">
-            <p class="text-[10px] font-bold uppercase opacity-80">Bez pojištění Aleně zbývá vyřešit:</p>
-            <h2 id="balance-val" class="text-2xl font-black">-14 000 Kč</h2>
-            <span class="info-btn" id="info-btn-left">i</span>
-            <div id="tooltip-left" class="tooltip-box">Jak jsme to spočítali? Běžné výdaje 40&nbsp;000 Kč minus nemocenská 33&nbsp;000 Kč = deficit 7&nbsp;000 Kč. K tomu náklady na léčbu 70&nbsp;000 Kč rozpočítané do 10 měsíců = 7&nbsp;000 Kč/měsíc. Celkem chybí 14&nbsp;000 Kč měsíčně.</div>
-        </div>
-        <div class="bg-brand-apple text-white p-3 rounded-xl shadow-lg flex flex-col justify-center relative">
-            <p class="text-[10px] font-bold uppercase opacity-80">S pojištěním je rodina v bezpečí:</p>
-            <h2 class="text-2xl font-black">+0 Kč</h2>
-            <span class="info-btn" id="info-btn-right">i</span>
-            <div id="tooltip-right" class="tooltip-box">Přehled sjednaných limitů: Základní smrt (10&nbsp;000 Kč), Doplňková smrt kles. (5&nbsp;040&nbsp;000 Kč), Invalidita 3.&nbsp;st. kles. (4&nbsp;160&nbsp;000 Kč), Invalidita 2.&nbsp;st. kles. (3&nbsp;536&nbsp;000 Kč), Invalidita 1.&nbsp;st. kles. (2&nbsp;912&nbsp;000 Kč), PN od 29.&nbsp;dne (350 Kč/den), Velmi vážná onemocnění (300&nbsp;000 Kč), Trvalé následky úrazu s progresí (900&nbsp;000 Kč), Úvěrový balíček (3&nbsp;500&nbsp;000 Kč).</div>
-        </div>
-    </div>
+<div class="h-full flex flex-col max-w-[1400px] mx-auto">
 
-    <!-- KŘIVKA ŽIVOTNÍ ÚROVNĚ (SVG) -->
-    <div class="max-w-5xl mx-auto mb-2 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
-        <div class="flex items-center justify-between mb-1 flex-wrap gap-1">
-            <div>
-                <p class="text-[10px] font-bold uppercase text-brand-stone opacity-70">Křivka životní úrovně rodiny</p>
-                <p class="text-xs font-bold">
-                    Aktuální životní úroveň:
-                    <span id="quality-label" class="text-brand-apple font-black">100 %</span>
+    <!-- ===== HEADER BAR ===== -->
+    <header class="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-2.5">
+        <div class="flex items-center gap-3 flex-wrap">
+
+            <!-- Deficit Status -->
+            <div id="status-bad" class="flex-shrink-0 bg-brand-orange text-white px-4 py-2 rounded-xl transition-colors duration-300 relative flex items-center gap-3" style="min-width:200px">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold uppercase opacity-80 truncate">Bez pojištění Aleně zbývá vyřešit:</p>
+                    <p id="balance-val" class="text-xl font-black leading-tight">-14 000 Kč</p>
+                </div>
+                <button class="info-btn" id="info-btn-left" aria-label="Jak jsme to spočítali" role="button" tabindex="0">i</button>
+                <div id="tooltip-left" class="tooltip-box">Jak jsme to spočítali? Běžné výdaje 40&nbsp;000 Kč minus nemocenská 33&nbsp;000 Kč = deficit 7&nbsp;000 Kč. K tomu náklady na léčbu 70&nbsp;000 Kč rozpočítané do 10 měsíců = 7&nbsp;000 Kč/měsíc. Celkem chybí 14&nbsp;000 Kč měsíčně.</div>
+            </div>
+
+            <!-- Quality of Life -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <div class="text-center px-2">
+                    <p class="text-xs font-bold text-brand-stone uppercase opacity-70">Životní úroveň</p>
+                    <p class="text-lg font-black leading-tight"><span id="quality-label" class="text-brand-apple font-black">100 %</span></p>
+                </div>
+                <div id="quality-badge" class="hidden text-xs font-black bg-orange-100 text-brand-orange py-1 px-2.5 rounded-full pulse-warn flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Pokles
+                </div>
+            </div>
+
+            <!-- Sparkline Chart -->
+            <div class="flex-1 min-w-[100px] max-w-[260px]">
+                <svg id="burn-svg" viewBox="0 0 480 70" xmlns="http://www.w3.org/2000/svg" class="w-full h-10 rounded-lg overflow-hidden bg-gray-50">
+                    <defs>
+                        <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0CB43F" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="#FF6130" stop-opacity="0.04"/>
+                        </linearGradient>
+                    </defs>
+                    <path id="burn-area" d="M0,4 L480,4 L480,64 L0,64 Z" fill="url(#burnGrad)"/>
+                    <line x1="0" y1="4" x2="480" y2="4" stroke="#E5E7EB" stroke-width="0.5" stroke-dasharray="4"/>
+                    <line x1="0" y1="34" x2="480" y2="34" stroke="#E5E7EB" stroke-width="0.5" stroke-dasharray="4"/>
+                    <line x1="0" y1="64" x2="480" y2="64" stroke="#E5E7EB" stroke-width="1"/>
+                    <text x="4" y="12" font-size="8" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">100%</text>
+                    <text x="4" y="38" font-size="8" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">50%</text>
+                    <text x="4" y="62" font-size="8" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">0%</text>
+                    <path id="burn-path" d="" fill="none" stroke="#0CB43F" stroke-width="2" stroke-linecap="round"/>
+                    <g id="tick-group"></g>
+                </svg>
+            </div>
+
+            <!-- Insurance Status -->
+            <div class="flex-shrink-0 bg-brand-apple text-white px-4 py-2 rounded-xl relative flex items-center gap-3" style="min-width:180px">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold uppercase opacity-80">S pojištěním je rodina v bezpečí:</p>
+                    <p class="text-xl font-black leading-tight">+0 Kč</p>
+                </div>
+                <button class="info-btn" id="info-btn-right" aria-label="Detail pojištění" role="button" tabindex="0">i</button>
+                <div id="tooltip-right" class="tooltip-box">Přehled sjednaných limitů: Základní smrt (10&nbsp;000 Kč), Doplňková smrt kles. (5&nbsp;040&nbsp;000 Kč), Invalidita 3.&nbsp;st. kles. (4&nbsp;160&nbsp;000 Kč), Invalidita 2.&nbsp;st. kles. (3&nbsp;536&nbsp;000 Kč), Invalidita 1.&nbsp;st. kles. (2&nbsp;912&nbsp;000 Kč), PN od 29.&nbsp;dne (350 Kč/den), Velmi vážná onemocnění (300&nbsp;000 Kč), Trvalé následky úrazu s progresí (900&nbsp;000 Kč), Úvěrový balíček (3&nbsp;500&nbsp;000 Kč).</div>
+            </div>
+
+            <!-- CTA Button -->
+            <button id="btn-next" class="flex-shrink-0 bg-gray-300 text-white font-black py-3 px-6 rounded-xl cursor-not-allowed transition-all duration-300 text-sm min-h-[48px]" aria-live="polite">
+                Ještě musíš rozpočet dořešit
+            </button>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 flex min-h-0 overflow-hidden">
+
+        <!-- LEFT PANEL: Budget Controls -->
+        <section class="w-[58%] flex flex-col border-r border-gray-200 bg-white" aria-label="Rozpočet bez pojištění">
+            <div class="px-4 pt-3 pb-2 flex-shrink-0 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brand-orange flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <h2 class="font-bold text-base text-brand-stone">Bez pojištění: Škrty v rozpočtu jsou nevyhnutelné</h2>
+                </div>
+                <p id="universe-subtitle" class="text-sm font-bold text-brand-orange flex-shrink-0">
+                    Měsíční deficit k řešení: <span id="deficit-display">14 000</span> Kč
                 </p>
             </div>
-            <div id="quality-badge" class="hidden text-[10px] font-black bg-orange-100 text-brand-orange py-0.5 px-2 rounded-full pulse-warn flex items-center gap-1">
-                <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Výrazný pokles
-            </div>
-        </div>
-        <svg id="burn-svg" viewBox="0 0 480 70" xmlns="http://www.w3.org/2000/svg" class="w-full h-16 rounded-lg overflow-hidden">
-            <defs>
-                <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#0CB43F" stop-opacity="0.18"/>
-                    <stop offset="100%" stop-color="#FF6130" stop-opacity="0.04"/>
-                </linearGradient>
-            </defs>
-            <path id="burn-area" d="M0,4 L480,4 L480,64 L0,64 Z" fill="url(#burnGrad)"/>
-            <line x1="0" y1="4" x2="480" y2="4" stroke="#E5E7EB" stroke-width="0.5" stroke-dasharray="4"/>
-            <line x1="0" y1="34" x2="480" y2="34" stroke="#E5E7EB" stroke-width="0.5" stroke-dasharray="4"/>
-            <line x1="0" y1="64" x2="480" y2="64" stroke="#E5E7EB" stroke-width="1"/>
-            <text x="4" y="12" font-size="8" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">100%</text>
-            <text x="4" y="38" font-size="8" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">50%</text>
-            <text x="4" y="62" font-size="8" fill="#9CA3AF" font-family="Inter,sans-serif" font-weight="700">0%</text>
-            <path id="burn-path" d="" fill="none" stroke="#0CB43F" stroke-width="2" stroke-linecap="round"/>
-            <g id="tick-group"></g>
-        </svg>
-    </div>
 
-    <!-- DVĚ VARIANTY -->
-    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="flex-1 overflow-y-auto custom-scroll px-4 pb-3">
+                <div class="grid grid-cols-2 gap-2">
 
-        <!-- BEZ POJIŠTĚNÍ -->
-        <div class="universe-card bg-white p-4 rounded-2xl border-2 border-brand-orange shadow-sm">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="p-1 bg-orange-100 text-brand-orange rounded-full text-sm"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-                <h3 class="font-bold text-sm">Bez pojištění: Škrty v rozpočtu jsou nevyhnutelné</h3>
-            </div>
-            <p id="universe-subtitle" class="text-[10px] font-bold text-brand-orange mb-2 pl-8">
-                Měsíční deficit k řešení: <span id="deficit-display">14 000</span> Kč
-            </p>
+                    <!-- Savings Toggle Card -->
+                    <div class="budget-card col-span-2 flex flex-row items-center justify-between bg-blue-50 border-brand-blue/30">
+                        <div>
+                            <p class="text-sm font-bold text-brand-stone">Využít jednorázové úspory 50 000 Kč</p>
+                            <p class="text-xs text-gray-500">= 5 000 Kč/měsíc po dobu 10 měsíců</p>
+                        </div>
+                        <button id="savings-toggle" class="savings-toggle flex-shrink-0 w-14 h-8 bg-gray-300 rounded-full p-1 border-2 border-gray-300 cursor-pointer" role="switch" aria-checked="false" aria-label="Využít jednorázové úspory">
+                            <div class="toggle-dot w-5 h-5 bg-white rounded-full shadow"></div>
+                        </button>
+                    </div>
 
-            <!-- Jednorázové úspory – toggle -->
-            <div class="mb-3 p-2 bg-blue-50 rounded-xl border border-brand-blue/20 flex items-center justify-between gap-2">
-                <div>
-                    <p class="text-xs font-bold text-brand-stone">Využít jednorázové úspory 50 000 Kč</p>
-                    <p class="text-[10px] text-gray-400">= 5 000 Kč/měsíc po dobu 10 měsíců</p>
+                    <!-- Hypotéka – fixed -->
+                    <div class="budget-card opacity-60">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Bydlení (Hypotéka)</span>
+                            <span class="text-sm font-bold">17 000 Kč</span>
+                        </div>
+                        <div class="h-2 bg-gray-200 rounded-full w-full"></div>
+                        <p class="text-xs text-red-500 font-bold uppercase mt-1">Nelze škrtat</p>
+                    </div>
+
+                    <!-- Jídlo -->
+                    <div class="budget-card" id="card-food">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Jídlo</span>
+                            <span id="food-val" class="text-sm font-bold text-brand-blue">10 000 Kč</span>
+                        </div>
+                        <input type="range" id="food-slider" min="4000" max="10000" step="500" value="10000" class="w-full" aria-label="Rozpočet na jídlo">
+                        <div id="food-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Horší kvalita potravin.</span></div>
+                    </div>
+
+                    <!-- Doprava -->
+                    <div class="budget-card" id="card-transport">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Doprava (auto)</span>
+                            <span id="transport-val" class="text-sm font-bold text-brand-blue">4 500 Kč</span>
+                        </div>
+                        <input type="range" id="transport-slider" min="1000" max="4500" step="500" value="4500" class="w-full" aria-label="Rozpočet na dopravu">
+                        <div id="transport-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Méně cestování autem.</span></div>
+                    </div>
+
+                    <!-- Telefon, TV, Internet -->
+                    <div class="budget-card" id="card-telecom">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Telefon, TV, Internet</span>
+                            <span id="telecom-val" class="text-sm font-bold text-brand-blue">2 000 Kč</span>
+                        </div>
+                        <input type="range" id="telecom-slider" min="500" max="2000" step="250" value="2000" class="w-full" aria-label="Rozpočet na telefon, TV, internet">
+                        <div id="telecom-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Omezení tarifů.</span></div>
+                    </div>
+
+                    <!-- Spoření -->
+                    <div class="budget-card" id="card-saving">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Spoření</span>
+                            <span id="saving-val" class="text-sm font-bold text-brand-blue">2 000 Kč</span>
+                        </div>
+                        <input type="range" id="saving-slider" min="0" max="2000" step="500" value="2000" class="w-full" aria-label="Rozpočet na spoření">
+                        <div id="saving-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Budování rezervy se zastavilo.</span></div>
+                    </div>
+
+                    <!-- Cestování -->
+                    <div class="budget-card" id="card-travel">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Cestování a dovolená</span>
+                            <span id="travel-val" class="text-sm font-bold text-brand-blue">3 000 Kč</span>
+                        </div>
+                        <input type="range" id="travel-slider" min="0" max="3000" step="500" value="3000" class="w-full" aria-label="Rozpočet na cestování">
+                        <div id="travel-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Na výlety nejsou peníze.</span></div>
+                    </div>
+
+                    <!-- Zábava -->
+                    <div class="budget-card" id="card-fun">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Zábava a koníčky</span>
+                            <span id="fun-val" class="text-sm font-bold text-brand-blue">1 500 Kč</span>
+                        </div>
+                        <input type="range" id="fun-slider" min="0" max="1500" step="250" value="1500" class="w-full" aria-label="Rozpočet na zábavu">
+                        <div id="fun-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Šetření má dopad i na dětský kroužek.</span></div>
+                    </div>
+
+                    <!-- Rodiče -->
+                    <div class="budget-card" id="card-parents">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold">Poprosit rodiče o pomoc</span>
+                            <span id="parents-val" class="text-sm font-bold text-brand-blue">0 Kč</span>
+                        </div>
+                        <input type="range" id="parents-slider" min="0" max="5000" step="500" value="0" class="w-full" aria-label="Pomoc od rodičů">
+                        <div id="parents-warn" class="slider-warning"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="warn-text">Alena nevěřila, že ještě bude prosit o výpomoc rodiče.</span></div>
+                    </div>
+
                 </div>
-                <button id="savings-toggle" class="savings-toggle flex-shrink-0 w-10 h-5 bg-gray-300 rounded-full p-0.5 border-2 border-gray-300 cursor-pointer" role="switch" aria-checked="false">
-                    <div class="toggle-dot w-3.5 h-3.5 bg-white rounded-full shadow"></div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Impacts + Insurance Benchmark -->
+        <aside class="w-[42%] flex flex-col bg-gray-50 overflow-hidden" aria-label="Dopady a pojištění">
+
+            <!-- Dynamic Impacts -->
+            <div class="px-4 pt-3 pb-1 flex-shrink-0">
+                <h3 class="font-bold text-base text-brand-stone flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brand-orange flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Co to znamená pro Alenu
+                </h3>
+            </div>
+            <div id="impacts-panel" class="px-4 pb-2 flex-shrink-0">
+                <div class="bg-white rounded-xl border border-gray-200 p-3 min-h-[48px]">
+                    <p id="impacts-empty" class="text-sm text-gray-400 text-center py-1">Zatím žádné škrty v rozpočtu.</p>
+                    <div id="impact-list" class="space-y-1.5 hidden"></div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="px-4 flex-shrink-0"><div class="border-t border-gray-200"></div></div>
+
+            <!-- Insurance Benchmark -->
+            <div class="flex-1 overflow-y-auto custom-scroll px-4 pt-3 pb-3">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-brand-apple flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                    <h3 class="font-bold text-base text-brand-stone">S pojištěním je rodina v bezpečí</h3>
+                </div>
+
+                <!-- Payout summary chips -->
+                <div class="bg-white rounded-xl border border-brand-apple/20 p-3 mb-3">
+                    <p class="text-xs font-bold text-brand-stone mb-2 uppercase">Rozpad pojistného plnění</p>
+                    <div class="space-y-1.5 mb-2">
+                        <div class="flex items-start gap-2 text-sm text-gray-600">
+                            <svg class="w-4 h-4 flex-shrink-0 text-brand-stone mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <span><strong>Velmi vážná onemocnění:</strong> 300 000 Kč jednorázově (pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva).</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm text-gray-600">
+                            <svg class="w-4 h-4 flex-shrink-0 text-brand-stone mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+                            <span><strong>Pracovní neschopnost:</strong> 350 Kč/den od 29. dne → průměrně <strong>9 660 Kč měsíčně</strong>.</span>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-gray-100">
+                        <p class="text-sm text-brand-stone font-bold">Z pojištění Alena čerpá průměrně <span class="text-brand-apple font-black">39 660 Kč/měs.</span></p>
+                    </div>
+                </div>
+
+                <!-- Benefits -->
+                <div class="space-y-2 mb-3">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <svg class="w-4 h-4 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Alena nemusí omezovat jízdu autem.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <svg class="w-4 h-4 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Rodina nesnížila kvalitu jídla.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <svg class="w-4 h-4 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Spoření běží dál.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <svg class="w-4 h-4 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Nemusí prosit rodiče o peníze.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <svg class="w-4 h-4 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Úspory zůstávají nedotčené.
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-200 text-center">
+                    <p class="text-xs font-bold text-brand-stone uppercase">Životní úroveň zachována na 100 %</p>
+                    <div class="flex justify-center gap-1 mt-1.5">
+                        <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
+                        <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
+                        <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+    </main>
+</div>
+
+<!-- ===== END-STATE OVERLAY ===== -->
+<div id="modal-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-8 max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl font-black text-brand-stone mb-2">Co to znamenalo pro Alenu</h2>
+        <p class="text-base text-gray-500 mb-5">Jelikož Alena neměla životní pojištění, musela přistoupit k těmto ústupkům:</p>
+
+        <div id="carousel-area" class="mb-6">
+            <div id="carousel-slide" class="space-y-2">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="flex items-center justify-between mt-4">
+                <p id="carousel-counter" class="text-xs text-gray-400 font-bold"></p>
+                <button id="btn-carousel-next" class="hidden bg-brand-stone text-white font-black py-3 px-8 rounded-xl text-sm transition-all duration-300 hover:opacity-90 min-h-[48px]">
+                    Další →
                 </button>
             </div>
+        </div>
 
-            <div class="space-y-2">
-                <!-- Hypotéka – fixní -->
-                <div class="opacity-50">
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Bydlení (Hypotéka)</span>
-                        <span class="text-xs font-bold">17 000 Kč</span>
-                    </div>
-                    <div class="h-1.5 bg-gray-200 rounded-full w-full"></div>
-                    <p class="text-[9px] mt-0.5 text-red-500 font-bold uppercase">Nelze škrtat</p>
-                </div>
-
-                <!-- Jídlo -->
-                <div>
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Jídlo</span>
-                        <span id="food-val" class="text-xs font-bold text-brand-blue">10 000 Kč</span>
-                    </div>
-                    <input type="range" id="food-slider" min="4000" max="10000" step="500" value="10000" class="w-full">
-                    <div id="food-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Horší kvalita potravin.</div>
-                </div>
-
-                <!-- Doprava -->
-                <div>
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Doprava (auto)</span>
-                        <span id="transport-val" class="text-xs font-bold text-brand-blue">4 500 Kč</span>
-                    </div>
-                    <input type="range" id="transport-slider" min="1000" max="4500" step="500" value="4500" class="w-full">
-                    <div id="transport-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Méně cestování autem.</div>
-                </div>
-
-                <!-- Telefon, TV, Internet -->
-                <div>
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Telefon, TV, Internet</span>
-                        <span id="telecom-val" class="text-xs font-bold text-brand-blue">2 000 Kč</span>
-                    </div>
-                    <input type="range" id="telecom-slider" min="500" max="2000" step="250" value="2000" class="w-full">
-                    <div id="telecom-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Omezení tarifů.</div>
-                </div>
-
-                <!-- Spoření a investice -->
-                <div>
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Spoření</span>
-                        <span id="saving-val" class="text-xs font-bold text-brand-blue">2 000 Kč</span>
-                    </div>
-                    <input type="range" id="saving-slider" min="0" max="2000" step="500" value="2000" class="w-full">
-                    <div id="saving-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Budování rezervy se zastavilo.</div>
-                </div>
-
-                <!-- Cestování -->
-                <div>
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Cestování a dovolená</span>
-                        <span id="travel-val" class="text-xs font-bold text-brand-blue">3 000 Kč</span>
-                    </div>
-                    <input type="range" id="travel-slider" min="0" max="3000" step="500" value="3000" class="w-full">
-                    <div id="travel-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Na výlety nejsou peníze.</div>
-                </div>
-
-                <!-- Zábava -->
-                <div>
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Zábava a koníčky</span>
-                        <span id="fun-val" class="text-xs font-bold text-brand-blue">1 500 Kč</span>
-                    </div>
-                    <input type="range" id="fun-slider" min="0" max="1500" step="250" value="1500" class="w-full">
-                    <div id="fun-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Šetření má dopad i na dětský kroužek.</div>
-                </div>
-
-                <!-- Rodiče -->
-                <div class="pt-2 border-t border-gray-100">
-                    <div class="flex justify-between mb-0.5">
-                        <span class="text-xs font-bold">Poprosit rodiče o pomoc</span>
-                        <span id="parents-val" class="text-xs font-bold text-brand-blue">0 Kč</span>
-                    </div>
-                    <input type="range" id="parents-slider" min="0" max="5000" step="500" value="0" class="w-full">
-                    <div id="parents-warn" class="slider-warning text-[10px] text-brand-orange font-medium mt-0.5 pl-1"><svg class="w-3 h-3 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Alena nevěřila, že ještě bude prosit o výpomoc rodiče.</div>
-                </div>
+        <div id="carousel-final" class="hidden text-center">
+            <button id="btn-password" class="bg-brand-stone text-white font-black py-3 px-8 rounded-xl transition-all duration-300 hover:opacity-90 text-base min-h-[48px]">
+                Ukázat heslo pro pokračování v kurzu
+            </button>
+            <div id="password-reveal" class="hidden mt-6">
+                <p class="text-xs text-gray-400 uppercase font-bold mb-2">Heslo pro pokračování:</p>
+                <p class="text-4xl font-black text-brand-apple tracking-widest">POJISTENICHRANI</p>
             </div>
         </div>
 
-        <!-- S POJIŠTĚNÍM -->
-        <div class="universe-card bg-white p-4 rounded-2xl border-2 border-brand-apple shadow-sm relative overflow-hidden">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="p-1 bg-green-100 text-brand-apple rounded-full text-sm"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
-                <h3 class="font-bold text-sm">S pojištěním je rodina v bezpečí</h3>
-            </div>
-
-            <div class="space-y-3 py-1">
-                <div class="p-2.5 bg-green-50 rounded-xl border border-brand-apple/20">
-                    <p class="text-[11px] font-bold text-brand-stone mb-1">Rozpad pojistného plnění:</p>
-                    <p class="text-[10px] leading-relaxed text-gray-600 mb-1"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-brand-stone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><strong>Velmi vážná onemocnění:</strong> 300 000 Kč jednorázově (pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva).</p>
-                    <p class="text-[10px] leading-relaxed text-gray-600"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-brand-stone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><strong>Pracovní neschopnost:</strong> 350 Kč/den od 29. dne → průměrně <strong>9 660 Kč měsíčně</strong>.</p>
-                </div>
-                <div class="p-2 bg-green-50/50 rounded-lg text-center">
-                    <p class="text-[10px] text-brand-stone font-bold">Z pojištění Alena čerpá průměrně <span class="text-brand-apple">39 660 Kč/měs.</span></p>
-                </div>
-                <ul class="space-y-3">
-                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Alena nemusí omezovat jízdu autem.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Rodina nesnížila kvalitu jídla.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Spoření běží dál.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Nemusí prosit rodiče o peníze.</li>
-                    <li class="flex items-center gap-2 text-[11px] font-medium"><svg class="w-3.5 h-3.5 flex-shrink-0 text-brand-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Úspory zůstávají nedotčené.</li>
-                </ul>
-                <div class="pt-2 border-t text-center">
-                    <p class="text-[10px] font-bold text-brand-stone uppercase">Životní úroveň zachována na 100 %</p>
-                    <div class="flex justify-center gap-1 mt-1">
-                        <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
-                        <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
-                        <div class="w-6 h-1 bg-brand-apple rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <button id="btn-close-modal" class="mt-6 w-full text-center text-base text-gray-400 hover:text-gray-600 font-bold py-3 min-h-[48px]">Zavřít</button>
     </div>
+</div>
 
-    <!-- CTA TLAČÍTKO -->
-    <div class="max-w-5xl mx-auto mt-3 flex justify-center">
-        <button id="btn-next" class="bg-gray-300 text-white font-black py-3 px-10 rounded-full cursor-not-allowed transition-all duration-300 text-sm">
-            Ještě musíš rozpočet dořešit
-        </button>
-    </div>
+<p id="carousel-text" class="hidden"></p>
 
-    <!-- MODÁLNÍ OKNO – CAROUSEL SHRNUTÍ -->
-    <div id="modal-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-black text-brand-stone mb-2">Co to znamenalo pro Alenu</h2>
-            <p class="text-sm text-gray-500 mb-4">Jelikož Alena neměla životní pojištění, musela přistoupit k těmto ústupkům:</p>
-            <div id="carousel-area" class="mb-6">
-                <div id="carousel-slide" class="bg-orange-50 border border-brand-orange/20 rounded-xl p-4 min-h-[80px] flex flex-col items-center justify-center text-center">
-                    <svg class="w-8 h-8 text-brand-orange opacity-40 mb-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
-                    <p id="carousel-text" class="text-base font-bold text-brand-stone"></p>
-                </div>
-                <div class="flex items-center justify-between mt-3">
-                    <p id="carousel-counter" class="text-[10px] text-gray-400 font-bold"></p>
-                    <button id="btn-carousel-next" class="bg-brand-stone text-white font-black py-2 px-6 rounded-full text-sm transition-all duration-300 hover:opacity-90">
-                        Další →
-                    </button>
-                </div>
-            </div>
-            <div id="carousel-final" class="hidden text-center">
-                <button id="btn-password" class="bg-brand-stone text-white font-black py-3 px-8 rounded-full transition-all duration-300 hover:opacity-90 text-sm">
-                    Ukázat heslo pro pokračování v kurzu
-                </button>
-                <div id="password-reveal" class="hidden mt-4">
-                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Heslo pro pokračování:</p>
-                    <p class="text-3xl font-black text-brand-apple tracking-widest">POJISTENICHRANI</p>
-                </div>
-            </div>
-            <button id="btn-close-modal" class="mt-4 w-full text-center text-sm text-gray-400 hover:text-gray-600 font-bold">Zavřít</button>
-        </div>
-    </div>
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function () {
+    var TARGET_DEFICIT = 14000;
+    var SAVINGS_TOTAL = 50000;
+    var SAVINGS_MONTHS = 10;
+    var SAVINGS_MONTHLY = SAVINGS_TOTAL / SAVINGS_MONTHS;
 
-    <!-- JAVASCRIPT -->
-    <script>
-    (function () {
-        const TARGET_DEFICIT = 14000;
-        const SAVINGS_TOTAL = 50000;  // jednorázové úspory
-        const SAVINGS_MONTHS = 10;    // období rozpočítání
-        const SAVINGS_MONTHLY = SAVINGS_TOTAL / SAVINGS_MONTHS; // = 5 000 Kč/měsíc
+    var FOOD_MAX = 10000, TRANSPORT_MAX = 4500, TELECOM_MAX = 2000;
+    var SAVING_MAX = 2000, TRAVEL_MAX = 3000, FUN_MAX = 1500;
+    var FOOD_MIN = 4000, TRANSPORT_MIN = 1000, TELECOM_MIN = 500;
+    var SAVING_MIN = 0, TRAVEL_MIN = 0, FUN_MIN = 0;
+    var PARENTS_MAX = 5000;
 
-        const FOOD_MAX = 10000, TRANSPORT_MAX = 4500, TELECOM_MAX = 2000;
-        const SAVING_MAX = 2000, TRAVEL_MAX = 3000, FUN_MAX = 1500;
-        const FOOD_MIN = 4000, TRANSPORT_MIN = 1000, TELECOM_MIN = 500;
-        const SAVING_MIN = 0, TRAVEL_MIN = 0, FUN_MIN = 0;
-        const PARENTS_MAX = 5000;
+    var MAX_EXPENSE_RANGE = (FOOD_MAX - FOOD_MIN) + (TRANSPORT_MAX - TRANSPORT_MIN) +
+                            (TELECOM_MAX - TELECOM_MIN) + (SAVING_MAX - SAVING_MIN) +
+                            (TRAVEL_MAX - TRAVEL_MIN) + (FUN_MAX - FUN_MIN);
+    var MAX_TOTAL_SACRIFICE = MAX_EXPENSE_RANGE + PARENTS_MAX;
 
-        const MAX_EXPENSE_RANGE = (FOOD_MAX - FOOD_MIN) + (TRANSPORT_MAX - TRANSPORT_MIN) +
-                                  (TELECOM_MAX - TELECOM_MIN) + (SAVING_MAX - SAVING_MIN) +
-                                  (TRAVEL_MAX - TRAVEL_MIN) + (FUN_MAX - FUN_MIN);
-        const MAX_TOTAL_SACRIFICE = MAX_EXPENSE_RANGE + PARENTS_MAX;
+    var foodSlider = document.getElementById('food-slider');
+    var transportSlider = document.getElementById('transport-slider');
+    var telecomSlider = document.getElementById('telecom-slider');
+    var savingSlider = document.getElementById('saving-slider');
+    var travelSlider = document.getElementById('travel-slider');
+    var funSlider = document.getElementById('fun-slider');
+    var parentsSlider = document.getElementById('parents-slider');
+    var savingsToggle = document.getElementById('savings-toggle');
 
-        const foodSlider = document.getElementById('food-slider');
-        const transportSlider = document.getElementById('transport-slider');
-        const telecomSlider = document.getElementById('telecom-slider');
-        const savingSlider = document.getElementById('saving-slider');
-        const travelSlider = document.getElementById('travel-slider');
-        const funSlider = document.getElementById('fun-slider');
-        const parentsSlider = document.getElementById('parents-slider');
-        const savingsToggle = document.getElementById('savings-toggle');
+    var foodValEl = document.getElementById('food-val');
+    var transportValEl = document.getElementById('transport-val');
+    var telecomValEl = document.getElementById('telecom-val');
+    var savingValEl = document.getElementById('saving-val');
+    var travelValEl = document.getElementById('travel-val');
+    var funValEl = document.getElementById('fun-val');
+    var parentsValEl = document.getElementById('parents-val');
 
-        const foodValEl = document.getElementById('food-val');
-        const transportValEl = document.getElementById('transport-val');
-        const telecomValEl = document.getElementById('telecom-val');
-        const savingValEl = document.getElementById('saving-val');
-        const travelValEl = document.getElementById('travel-val');
-        const funValEl = document.getElementById('fun-val');
-        const parentsValEl = document.getElementById('parents-val');
+    var balanceEl = document.getElementById('balance-val');
+    var statusBadEl = document.getElementById('status-bad');
+    var btnNext = document.getElementById('btn-next');
+    var deficitDisplay = document.getElementById('deficit-display');
+    var qualityLabel = document.getElementById('quality-label');
+    var qualityBadge = document.getElementById('quality-badge');
+    var burnPath = document.getElementById('burn-path');
+    var burnArea = document.getElementById('burn-area');
+    var tickGroup = document.getElementById('tick-group');
+    var modalOverlay = document.getElementById('modal-overlay');
+    var btnPassword = document.getElementById('btn-password');
+    var passwordReveal = document.getElementById('password-reveal');
+    var btnCloseModal = document.getElementById('btn-close-modal');
+    var carouselText = document.getElementById('carousel-text');
+    var carouselCounter = document.getElementById('carousel-counter');
+    var btnCarouselNext = document.getElementById('btn-carousel-next');
+    var carouselArea = document.getElementById('carousel-area');
+    var carouselFinal = document.getElementById('carousel-final');
+    var infoBtnLeft = document.getElementById('info-btn-left');
+    var infoBtnRight = document.getElementById('info-btn-right');
+    var tooltipLeft = document.getElementById('tooltip-left');
+    var tooltipRight = document.getElementById('tooltip-right');
 
-        const balanceEl = document.getElementById('balance-val');
-        const statusBadEl = document.getElementById('status-bad');
-        const btnNext = document.getElementById('btn-next');
-        const deficitDisplay = document.getElementById('deficit-display');
-        const qualityLabel = document.getElementById('quality-label');
-        const qualityBadge = document.getElementById('quality-badge');
-        const burnPath = document.getElementById('burn-path');
-        const burnArea = document.getElementById('burn-area');
-        const tickGroup = document.getElementById('tick-group');
-        const modalOverlay = document.getElementById('modal-overlay');
-        const btnPassword = document.getElementById('btn-password');
-        const passwordReveal = document.getElementById('password-reveal');
-        const btnCloseModal = document.getElementById('btn-close-modal');
-        const carouselText = document.getElementById('carousel-text');
-        const carouselCounter = document.getElementById('carousel-counter');
-        const btnCarouselNext = document.getElementById('btn-carousel-next');
-        const carouselArea = document.getElementById('carousel-area');
-        const carouselFinal = document.getElementById('carousel-final');
-        const infoBtnLeft = document.getElementById('info-btn-left');
-        const infoBtnRight = document.getElementById('info-btn-right');
-        const tooltipLeft = document.getElementById('tooltip-left');
-        const tooltipRight = document.getElementById('tooltip-right');
+    var impactListEl = document.getElementById('impact-list');
+    var impactsEmptyEl = document.getElementById('impacts-empty');
+    var carouselSlideEl = document.getElementById('carousel-slide');
 
-        var carouselImpacts = [];
-        var carouselIndex = 0;
+    var cardFood = document.getElementById('card-food');
+    var cardTransport = document.getElementById('card-transport');
+    var cardTelecom = document.getElementById('card-telecom');
+    var cardSaving = document.getElementById('card-saving');
+    var cardTravel = document.getElementById('card-travel');
+    var cardFun = document.getElementById('card-fun');
+    var cardParents = document.getElementById('card-parents');
 
-        // Warning elements
-        const foodWarn = document.getElementById('food-warn');
-        const transportWarn = document.getElementById('transport-warn');
-        const telecomWarn = document.getElementById('telecom-warn');
-        const savingWarn = document.getElementById('saving-warn');
-        const travelWarn = document.getElementById('travel-warn');
-        const funWarn = document.getElementById('fun-warn');
-        const parentsWarn = document.getElementById('parents-warn');
+    var carouselImpacts = [];
+    var carouselIndex = 0;
 
-        var savingsActive = false;
+    var foodWarn = document.getElementById('food-warn');
+    var transportWarn = document.getElementById('transport-warn');
+    var telecomWarn = document.getElementById('telecom-warn');
+    var savingWarn = document.getElementById('saving-warn');
+    var travelWarn = document.getElementById('travel-warn');
+    var funWarn = document.getElementById('fun-warn');
+    var parentsWarn = document.getElementById('parents-warn');
 
-        const SVG_W = 480, SVG_H = 70;
-        const Y_TOP = 4, Y_BOT = 64;
+    var savingsActive = false;
 
-        function formatKc(val) {
-            return val.toLocaleString('cs-CZ') + ' Kč';
-        }
+    var SVG_W = 480, SVG_H = 70;
+    var Y_TOP = 4, Y_BOT = 64;
 
-        function pctToY(pct) {
-            return Y_BOT - ((pct / 100) * (Y_BOT - Y_TOP));
-        }
+    function formatKc(val) {
+        return val.toLocaleString('cs-CZ') + ' Kč';
+    }
 
-        function drawQualityCurve(qualityPct) {
-            tickGroup.innerHTML = '';
-            var months = 10;
-            var points = [];
+    function pctToY(pct) {
+        return Y_BOT - ((pct / 100) * (Y_BOT - Y_TOP));
+    }
 
-            for (var m = 0; m <= months; m++) {
-                var x = (m / months) * SVG_W;
-                // Quadratic drop: quality accelerates downward over time
-                // Formula: base × (1 − 0.25·t²) where t = month/totalMonths
-                var t = m / months;
-                // Quadratic degradation: timeFactor = 1 − 0.25·t² where t ∈ [0,1].
-                // At month 10 (t=1), quality = base × 0.75, giving a dramatic accelerating drop.
-                var timeFactor = 1 - 0.25 * t * t;
-                var monthQuality = Math.max(0, qualityPct * timeFactor);
-                var y = pctToY(monthQuality);
-                points.push(x.toFixed(1) + ',' + y.toFixed(1));
+    function drawQualityCurve(qualityPct) {
+        tickGroup.innerHTML = '';
+        var months = 10;
+        var points = [];
 
-                if (m > 0 && m % 2 === 0) {
-                    var tick = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    tick.setAttribute('x', x.toFixed(1));
-                    tick.setAttribute('y', SVG_H - 1);
-                    tick.setAttribute('font-size', '7');
-                    tick.setAttribute('fill', '#9CA3AF');
-                    tick.setAttribute('text-anchor', 'middle');
-                    tick.setAttribute('font-family', 'Inter,sans-serif');
-                    tick.textContent = m + 'm';
-                    tickGroup.appendChild(tick);
-                }
-            }
+        for (var m = 0; m <= months; m++) {
+            var x = (m / months) * SVG_W;
+            var t = m / months;
+            var timeFactor = 1 - 0.25 * t * t;
+            var monthQuality = Math.max(0, qualityPct * timeFactor);
+            var y = pctToY(monthQuality);
+            points.push(x.toFixed(1) + ',' + y.toFixed(1));
 
-            var d = 'M' + points.join(' L');
-            burnPath.setAttribute('d', d);
-
-            var lastX = parseFloat(points[points.length - 1].split(',')[0]);
-            burnArea.setAttribute('d', 'M' + points.join(' L') + ' L' + lastX + ',' + Y_BOT + ' L0,' + Y_BOT + ' Z');
-
-            if (qualityPct > 70) {
-                burnPath.style.stroke = '#0CB43F';
-            } else if (qualityPct > 40) {
-                burnPath.style.stroke = '#FF6130';
-            } else {
-                burnPath.style.stroke = '#DC2626';
+            if (m > 0 && m % 2 === 0) {
+                var tick = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                tick.setAttribute('x', x.toFixed(1));
+                tick.setAttribute('y', SVG_H - 1);
+                tick.setAttribute('font-size', '7');
+                tick.setAttribute('fill', '#9CA3AF');
+                tick.setAttribute('text-anchor', 'middle');
+                tick.setAttribute('font-family', 'Inter,sans-serif');
+                tick.textContent = m + 'm';
+                tickGroup.appendChild(tick);
             }
         }
 
-        function toggleWarning(el, show) {
-            if (show) {
-                el.classList.add('visible');
-            } else {
-                el.classList.remove('visible');
-            }
+        var d = 'M' + points.join(' L');
+        burnPath.setAttribute('d', d);
+
+        var lastX = parseFloat(points[points.length - 1].split(',')[0]);
+        burnArea.setAttribute('d', 'M' + points.join(' L') + ' L' + lastX + ',' + Y_BOT + ' L0,' + Y_BOT + ' Z');
+
+        if (qualityPct > 70) {
+            burnPath.style.stroke = '#0CB43F';
+        } else if (qualityPct > 40) {
+            burnPath.style.stroke = '#FF6130';
+        } else {
+            burnPath.style.stroke = '#DC2626';
+        }
+    }
+
+    function toggleWarning(el, show) {
+        if (show) {
+            el.classList.add('visible');
+        } else {
+            el.classList.remove('visible');
+        }
+    }
+
+    function toggleCardState(card, hasCut) {
+        if (card) {
+            if (hasCut) { card.classList.add('has-cut'); }
+            else { card.classList.remove('has-cut'); }
+        }
+    }
+
+    function updateImpactsPanel(impacts) {
+        if (impacts.length === 0) {
+            impactsEmptyEl.classList.remove('hidden');
+            impactListEl.classList.add('hidden');
+        } else {
+            impactsEmptyEl.classList.add('hidden');
+            impactListEl.classList.remove('hidden');
+            impactListEl.innerHTML = impacts.map(function(text) {
+                return '<div class="impact-item"><svg class="w-4 h-4 flex-shrink-0 text-brand-orange mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>' + text + '</span></div>';
+            }).join('');
+        }
+    }
+
+    function update() {
+        var foodVal = parseInt(foodSlider.value);
+        var transportVal = parseInt(transportSlider.value);
+        var telecomVal = parseInt(telecomSlider.value);
+        var savingVal = parseInt(savingSlider.value);
+        var travelVal = parseInt(travelSlider.value);
+        var funVal = parseInt(funSlider.value);
+        var parentsVal = parseInt(parentsSlider.value);
+
+        foodValEl.innerText = formatKc(foodVal);
+        transportValEl.innerText = formatKc(transportVal);
+        telecomValEl.innerText = formatKc(telecomVal);
+        savingValEl.innerText = formatKc(savingVal);
+        travelValEl.innerText = formatKc(travelVal);
+        funValEl.innerText = formatKc(funVal);
+        parentsValEl.innerText = formatKc(parentsVal);
+
+        var foodCut = foodVal < FOOD_MAX;
+        var transportCut = transportVal < TRANSPORT_MAX;
+        var telecomCut = telecomVal < TELECOM_MAX;
+        var savingCut = savingVal < SAVING_MAX;
+        var travelCut = travelVal < TRAVEL_MAX;
+        var funCut = funVal < FUN_MAX;
+        var parentsCut = parentsVal > 0;
+
+        toggleWarning(foodWarn, foodCut);
+        toggleWarning(transportWarn, transportCut);
+        toggleWarning(telecomWarn, telecomCut);
+        toggleWarning(savingWarn, savingCut);
+        toggleWarning(travelWarn, travelCut);
+        toggleWarning(funWarn, funCut);
+        toggleWarning(parentsWarn, parentsCut);
+
+        toggleCardState(cardFood, foodCut);
+        toggleCardState(cardTransport, transportCut);
+        toggleCardState(cardTelecom, telecomCut);
+        toggleCardState(cardSaving, savingCut);
+        toggleCardState(cardTravel, travelCut);
+        toggleCardState(cardFun, funCut);
+        toggleCardState(cardParents, parentsCut);
+
+        var impacts = [];
+        if (savingsActive) impacts.push('Musí sáhnout do jednorázových úspor (50 000 Kč za 10 měsíců).');
+        if (foodCut) impacts.push('Horší kvalita potravin.');
+        if (transportCut) impacts.push('Méně cestování autem.');
+        if (telecomCut) impacts.push('Omezení tarifů.');
+        if (savingCut) impacts.push('Budování rezervy se zastavilo.');
+        if (travelCut) impacts.push('Na výlety nejsou peníze.');
+        if (funCut) impacts.push('Šetření má dopad i na dětský kroužek.');
+        if (parentsCut) impacts.push('Alena nevěřila, že ještě bude prosit o výpomoc rodiče.');
+        updateImpactsPanel(impacts);
+
+        var savedFromExpenses = (FOOD_MAX - foodVal) + (TRANSPORT_MAX - transportVal) +
+                                (TELECOM_MAX - telecomVal) + (SAVING_MAX - savingVal) +
+                                (TRAVEL_MAX - travelVal) + (FUN_MAX - funVal);
+        var savingsBonus = savingsActive ? SAVINGS_MONTHLY : 0;
+        var totalSaved = savedFromExpenses + parentsVal + savingsBonus;
+
+        var remaining = TARGET_DEFICIT - totalSaved;
+
+        if (remaining > 0) {
+            balanceEl.innerText = '-' + remaining.toLocaleString('cs-CZ') + ' Kč';
+            statusBadEl.style.backgroundColor = '#FF6130';
+            btnNext.classList.remove('bg-brand-apple', 'cursor-pointer');
+            btnNext.classList.add('bg-gray-300', 'cursor-not-allowed');
+            btnNext.innerText = 'Ještě musíš rozpočet dořešit';
+            btnNext.onclick = null;
+        } else {
+            balanceEl.innerText = 'VYROVNÁNO ✓';
+            statusBadEl.style.backgroundColor = '#245375';
+            btnNext.classList.remove('bg-gray-300', 'cursor-not-allowed');
+            btnNext.classList.add('bg-brand-apple', 'cursor-pointer');
+            btnNext.innerText = 'Pokračovat na shrnutí →';
+            btnNext.onclick = openModal;
         }
 
-        function update() {
-            var foodVal = parseInt(foodSlider.value);
-            var transportVal = parseInt(transportSlider.value);
-            var telecomVal = parseInt(telecomSlider.value);
-            var savingVal = parseInt(savingSlider.value);
-            var travelVal = parseInt(travelSlider.value);
-            var funVal = parseInt(funSlider.value);
-            var parentsVal = parseInt(parentsSlider.value);
+        deficitDisplay.innerText = (remaining > 0 ? remaining : 0).toLocaleString('cs-CZ');
 
-            foodValEl.innerText = formatKc(foodVal);
-            transportValEl.innerText = formatKc(transportVal);
-            telecomValEl.innerText = formatKc(telecomVal);
-            savingValEl.innerText = formatKc(savingVal);
-            travelValEl.innerText = formatKc(travelVal);
-            funValEl.innerText = formatKc(funVal);
-            parentsValEl.innerText = formatKc(parentsVal);
+        var totalSacrifice = savedFromExpenses + parentsVal;
+        var qualityPct = Math.max(0, Math.round(100 - ((totalSacrifice / MAX_TOTAL_SACRIFICE) * 100)));
 
-            // Emotional feedback warnings
-            toggleWarning(foodWarn, foodVal < FOOD_MAX);
-            toggleWarning(transportWarn, transportVal < TRANSPORT_MAX);
-            toggleWarning(telecomWarn, telecomVal < TELECOM_MAX);
-            toggleWarning(savingWarn, savingVal < SAVING_MAX);
-            toggleWarning(travelWarn, travelVal < TRAVEL_MAX);
-            toggleWarning(funWarn, funVal < FUN_MAX);
-            toggleWarning(parentsWarn, parentsVal > 0);
+        qualityLabel.innerText = qualityPct + ' %';
 
-            var savedFromExpenses = (FOOD_MAX - foodVal) + (TRANSPORT_MAX - transportVal) +
-                                    (TELECOM_MAX - telecomVal) + (SAVING_MAX - savingVal) +
-                                    (TRAVEL_MAX - travelVal) + (FUN_MAX - funVal);
-            var savingsBonus = savingsActive ? SAVINGS_MONTHLY : 0;
-            var totalSaved = savedFromExpenses + parentsVal + savingsBonus;
-
-            var remaining = TARGET_DEFICIT - totalSaved;
-
-            if (remaining > 0) {
-                balanceEl.innerText = '-' + remaining.toLocaleString('cs-CZ') + ' Kč';
-                statusBadEl.style.backgroundColor = '#FF6130';
-                btnNext.classList.remove('bg-brand-apple', 'cursor-pointer');
-                btnNext.classList.add('bg-gray-300', 'cursor-not-allowed');
-                btnNext.innerText = 'Ještě musíš rozpočet dořešit';
-                btnNext.onclick = null;
-            } else {
-                balanceEl.innerText = 'VYROVNÁNO ✓';
-                statusBadEl.style.backgroundColor = '#245375';
-                btnNext.classList.remove('bg-gray-300', 'cursor-not-allowed');
-                btnNext.classList.add('bg-brand-apple', 'cursor-pointer');
-                btnNext.innerText = 'Pokračovat na shrnutí →';
-                btnNext.onclick = openModal;
-            }
-
-            deficitDisplay.innerText = (remaining > 0 ? remaining : 0).toLocaleString('cs-CZ');
-
-            var totalSacrifice = savedFromExpenses + parentsVal;
-            // One-time savings don't reduce quality of life (it's your money)
-            var qualityPct = Math.max(0, Math.round(100 - ((totalSacrifice / MAX_TOTAL_SACRIFICE) * 100)));
-
-            qualityLabel.innerText = qualityPct + ' %';
-
-            if (qualityPct >= 80) {
-                qualityLabel.className = 'text-brand-apple font-black';
-                qualityBadge.classList.add('hidden');
-            } else if (qualityPct >= 50) {
-                qualityLabel.className = 'text-brand-orange font-black';
-                qualityBadge.classList.add('hidden');
-            } else {
-                qualityLabel.className = 'text-red-600 font-black';
-                qualityBadge.classList.remove('hidden');
-            }
-
-            drawQualityCurve(qualityPct);
+        if (qualityPct >= 80) {
+            qualityLabel.className = 'text-brand-apple font-black';
+            qualityBadge.classList.add('hidden');
+        } else if (qualityPct >= 50) {
+            qualityLabel.className = 'text-brand-orange font-black';
+            qualityBadge.classList.add('hidden');
+        } else {
+            qualityLabel.className = 'text-red-600 font-black';
+            qualityBadge.classList.remove('hidden');
         }
 
-        function openModal() {
-            var foodVal = parseInt(foodSlider.value);
-            var transportVal = parseInt(transportSlider.value);
-            var telecomVal = parseInt(telecomSlider.value);
-            var savingVal = parseInt(savingSlider.value);
-            var travelVal = parseInt(travelSlider.value);
-            var funVal = parseInt(funSlider.value);
-            var parentsVal = parseInt(parentsSlider.value);
+        drawQualityCurve(qualityPct);
+    }
 
-            carouselImpacts = [];
+    function openModal() {
+        var foodVal = parseInt(foodSlider.value);
+        var transportVal = parseInt(transportSlider.value);
+        var telecomVal = parseInt(telecomSlider.value);
+        var savingVal = parseInt(savingSlider.value);
+        var travelVal = parseInt(travelSlider.value);
+        var funVal = parseInt(funSlider.value);
+        var parentsVal = parseInt(parentsSlider.value);
 
-            if (savingsActive) {
-                carouselImpacts.push('Musela sáhnout do jednorázových úspor a rozpustit ' + SAVINGS_TOTAL.toLocaleString('cs-CZ') + ' Kč za ' + SAVINGS_MONTHS + ' měsíců.');
-            }
-            if (foodVal < FOOD_MAX) {
-                carouselImpacts.push('Horší kvalita potravin.');
-            }
-            if (transportVal < TRANSPORT_MAX) {
-                carouselImpacts.push('Méně cestování autem.');
-            }
-            if (telecomVal < TELECOM_MAX) {
-                carouselImpacts.push('Omezení tarifů.');
-            }
-            if (savingVal < SAVING_MAX) {
-                carouselImpacts.push('Budování rezervy se zastavilo.');
-            }
-            if (travelVal < TRAVEL_MAX) {
-                carouselImpacts.push('Na výlety nejsou peníze.');
-            }
-            if (funVal < FUN_MAX) {
-                carouselImpacts.push('Šetření má dopad i na dětský kroužek.');
-            }
-            if (parentsVal > 0) {
-                carouselImpacts.push('Alena nevěřila, že ještě bude prosit o výpomoc rodiče.');
-            }
+        carouselImpacts = [];
 
-            if (carouselImpacts.length === 0) {
-                carouselImpacts.push('Alena vyrovnala rozpočet bez výrazných ústupků.');
-            }
+        if (savingsActive) {
+            carouselImpacts.push('Musela sáhnout do jednorázových úspor a rozpustit ' + SAVINGS_TOTAL.toLocaleString('cs-CZ') + ' Kč za ' + SAVINGS_MONTHS + ' měsíců.');
+        }
+        if (foodVal < FOOD_MAX) {
+            carouselImpacts.push('Horší kvalita potravin.');
+        }
+        if (transportVal < TRANSPORT_MAX) {
+            carouselImpacts.push('Méně cestování autem.');
+        }
+        if (telecomVal < TELECOM_MAX) {
+            carouselImpacts.push('Omezení tarifů.');
+        }
+        if (savingVal < SAVING_MAX) {
+            carouselImpacts.push('Budování rezervy se zastavilo.');
+        }
+        if (travelVal < TRAVEL_MAX) {
+            carouselImpacts.push('Na výlety nejsou peníze.');
+        }
+        if (funVal < FUN_MAX) {
+            carouselImpacts.push('Šetření má dopad i na dětský kroužek.');
+        }
+        if (parentsVal > 0) {
+            carouselImpacts.push('Alena nevěřila, že ještě bude prosit o výpomoc rodiče.');
+        }
 
-            carouselIndex = 0;
-            showCarouselSlide();
-            carouselArea.classList.remove('hidden');
+        if (carouselImpacts.length === 0) {
+            carouselImpacts.push('Alena vyrovnala rozpočet bez výrazných ústupků.');
+        }
+
+        // Show all impacts at once (no carousel stepping)
+        var listHtml = carouselImpacts.map(function(text, i) {
+            return '<div class="flex items-start gap-3 p-3 bg-orange-50 rounded-lg border-l-[3px] border-brand-orange">' +
+                '<span class="flex-shrink-0 w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-black flex items-center justify-center">' + (i + 1) + '</span>' +
+                '<span class="text-base text-brand-stone font-medium">' + text + '</span></div>';
+        }).join('');
+        carouselSlideEl.innerHTML = listHtml;
+
+        carouselCounter.textContent = carouselImpacts.length + ' ústupků celkem';
+        btnCarouselNext.classList.add('hidden');
+        carouselArea.classList.remove('hidden');
+        carouselFinal.classList.remove('hidden');
+        passwordReveal.classList.add('hidden');
+        btnPassword.classList.remove('hidden');
+        modalOverlay.classList.remove('hidden');
+    }
+
+    function showCarouselSlide() {
+        carouselText.textContent = carouselImpacts[carouselIndex];
+        carouselCounter.textContent = (carouselIndex + 1) + ' / ' + carouselImpacts.length;
+
+        if (carouselIndex >= carouselImpacts.length - 1) {
+            btnCarouselNext.classList.add('hidden');
+            carouselFinal.classList.remove('hidden');
+        } else {
+            btnCarouselNext.classList.remove('hidden');
             carouselFinal.classList.add('hidden');
-            passwordReveal.classList.add('hidden');
-            btnPassword.classList.remove('hidden');
-            modalOverlay.classList.remove('hidden');
         }
+    }
 
-        function showCarouselSlide() {
-            carouselText.textContent = carouselImpacts[carouselIndex];
-            carouselCounter.textContent = (carouselIndex + 1) + ' / ' + carouselImpacts.length;
+    function closeModal() {
+        modalOverlay.classList.add('hidden');
+    }
 
-            if (carouselIndex >= carouselImpacts.length - 1) {
-                btnCarouselNext.classList.add('hidden');
-                carouselFinal.classList.remove('hidden');
-            } else {
-                btnCarouselNext.classList.remove('hidden');
-                carouselFinal.classList.add('hidden');
-            }
+    // Event listeners
+    document.querySelectorAll('input[type=range]').forEach(function(s) {
+        s.addEventListener('input', update);
+    });
+
+    savingsToggle.addEventListener('click', function() {
+        savingsActive = !savingsActive;
+        if (savingsActive) {
+            savingsToggle.classList.add('active');
+            savingsToggle.setAttribute('aria-checked', 'true');
+        } else {
+            savingsToggle.classList.remove('active');
+            savingsToggle.setAttribute('aria-checked', 'false');
         }
-
-        function closeModal() {
-            modalOverlay.classList.add('hidden');
-        }
-
-        // Event listeners
-        document.querySelectorAll('input[type=range]').forEach(function(s) {
-            s.addEventListener('input', update);
-        });
-
-        savingsToggle.addEventListener('click', function() {
-            savingsActive = !savingsActive;
-            if (savingsActive) {
-                savingsToggle.classList.add('active');
-                savingsToggle.setAttribute('aria-checked', 'true');
-            } else {
-                savingsToggle.classList.remove('active');
-                savingsToggle.setAttribute('aria-checked', 'false');
-            }
-            update();
-        });
-
-        btnPassword.addEventListener('click', function() {
-            passwordReveal.classList.remove('hidden');
-            btnPassword.classList.add('hidden');
-        });
-
-        btnCarouselNext.addEventListener('click', function() {
-            if (carouselIndex < carouselImpacts.length - 1) {
-                carouselIndex++;
-                showCarouselSlide();
-            }
-        });
-
-        btnCloseModal.addEventListener('click', closeModal);
-
-        modalOverlay.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) {
-                closeModal();
-            }
-        });
-
-        // Tooltip toggle logic
-        function closeAllTooltips() {
-            tooltipLeft.classList.remove('visible');
-            tooltipRight.classList.remove('visible');
-        }
-
-        infoBtnLeft.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var isOpen = tooltipLeft.classList.contains('visible');
-            closeAllTooltips();
-            if (!isOpen) tooltipLeft.classList.add('visible');
-        });
-
-        infoBtnRight.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var isOpen = tooltipRight.classList.contains('visible');
-            closeAllTooltips();
-            if (!isOpen) tooltipRight.classList.add('visible');
-        });
-
-        document.addEventListener('click', closeAllTooltips);
-
         update();
-    })();
-    </script>
+    });
+
+    btnPassword.addEventListener('click', function() {
+        passwordReveal.classList.remove('hidden');
+        btnPassword.classList.add('hidden');
+    });
+
+    btnCarouselNext.addEventListener('click', function() {
+        if (carouselIndex < carouselImpacts.length - 1) {
+            carouselIndex++;
+            showCarouselSlide();
+        }
+    });
+
+    btnCloseModal.addEventListener('click', closeModal);
+
+    modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+
+    // Tooltip toggle logic
+    function closeAllTooltips() {
+        tooltipLeft.classList.remove('visible');
+        tooltipRight.classList.remove('visible');
+    }
+
+    infoBtnLeft.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = tooltipLeft.classList.contains('visible');
+        closeAllTooltips();
+        if (!isOpen) tooltipLeft.classList.add('visible');
+    });
+
+    infoBtnRight.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = tooltipRight.classList.contains('visible');
+        closeAllTooltips();
+        if (!isOpen) tooltipRight.classList.add('visible');
+    });
+
+    document.addEventListener('click', closeAllTooltips);
+
+    update();
+})();
+</script>
 </body>
 </html>
