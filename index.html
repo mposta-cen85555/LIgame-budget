@@ -68,11 +68,6 @@
         .impact-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; color: #303030; }
         .impact-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF6130; flex-shrink: 0; }
 
-        /* ── Collapsible ── */
-        .collapsible-toggle { cursor: pointer; user-select: none; }
-        .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
-        .collapsible-body.open { max-height: 500px; }
-
         /* ── Scrollbar ── */
         .custom-scroll::-webkit-scrollbar { width: 3px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -302,6 +297,11 @@
                             <div class="popover-row"><span class="popover-label">Velmi vážná onemocnění</span><span class="popover-value">300 000 Kč</span></div>
                             <div class="popover-row"><span class="popover-label">Trvalé následky úrazu s progresí</span><span class="popover-value">900 000 Kč</span></div>
                             <div class="popover-row"><span class="popover-label">Úvěrový balíček</span><span class="popover-value">3 500 000 Kč</span></div>
+                            <div class="popover-section">Rozpad pojistného plnění</div>
+                            <div class="popover-row"><span class="popover-label">Velmi vážná onemocnění</span><span class="popover-value">300 000 Kč jednorázově</span></div>
+                            <div class="popover-row" style="border-bottom:none"><span class="popover-label text-xs text-gray-400" style="font-size:12px">Pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva</span><span class="popover-value"></span></div>
+                            <div class="popover-row"><span class="popover-label">Pracovní neschopnost</span><span class="popover-value">350 Kč/den od 29. dne</span></div>
+                            <div class="popover-row" style="border-bottom:none"><span class="popover-label text-xs text-gray-400" style="font-size:12px">Průměrně 9 660 Kč měsíčně</span><span class="popover-value"></span></div>
                         </div>
                     </div>
 
@@ -318,23 +318,7 @@
 
                     <p class="text-xs font-semibold text-brand-stone text-center opacity-60 uppercase">Životní úroveň zachována na 100 %</p>
 
-                    <!-- Collapsible payout detail -->
-                    <div class="mt-2 border-t border-gray-100 pt-2">
-                        <div class="collapsible-toggle flex items-center justify-between" id="payout-toggle" role="button" aria-expanded="false" tabindex="0">
-                            <span class="text-xs font-semibold text-gray-400 uppercase">Rozpad pojistného plnění</span>
-                            <svg id="payout-chevron" class="w-4 h-4 text-gray-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="collapsible-body" id="payout-body">
-                            <div class="pt-2 space-y-1.5">
-                                <div class="text-sm text-gray-600">
-                                    <strong>Velmi vážná onemocnění:</strong> 300 000 Kč jednorázově (pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva).
-                                </div>
-                                <div class="text-sm text-gray-600">
-                                    <strong>Pracovní neschopnost:</strong> 350 Kč/den od 29. dne → průměrně <strong>9 660 Kč měsíčně</strong>.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
             </div>
@@ -726,21 +710,6 @@
     });
 
     document.addEventListener('click', closeAllTooltips);
-
-    /* ── Collapsible payout section ── */
-    var payoutToggle = document.getElementById('payout-toggle');
-    var payoutBody = document.getElementById('payout-body');
-    var payoutChevron = document.getElementById('payout-chevron');
-
-    payoutToggle.addEventListener('click', function() {
-        var open = payoutBody.classList.toggle('open');
-        payoutChevron.style.transform = open ? 'rotate(180deg)' : '';
-        payoutToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-
-    payoutToggle.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); payoutToggle.click(); }
-    });
 
     /* ── Init ── */
     update();
