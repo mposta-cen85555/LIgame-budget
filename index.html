@@ -23,7 +23,7 @@
         }
     </script>
     <style>
-        html, body { height: 100%; overflow: hidden; }
+        html, body { min-height: 100%; }
 
         /* ── Slider ── */
         input[type=range] { -webkit-appearance: none; background: #E5E7EB; height: 6px; border-radius: 999px; cursor: pointer; }
@@ -158,12 +158,12 @@
         .group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #9CA3AF; padding: 6px 0 2px 2px; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-brand-anthracite h-full overflow-hidden">
+<body class="bg-gray-100 font-sans text-brand-anthracite">
 
-<div class="h-full flex flex-col max-w-[1400px] mx-auto">
+<div class="flex flex-col max-w-[1400px] mx-auto">
 
     <!-- ════════ HEADER ════════ -->
-    <header class="flex-shrink-0 bg-white border-b border-gray-200 px-5 py-2">
+    <header class="bg-white border-b border-gray-200 px-5 py-2">
         <div class="flex items-center gap-4">
 
             <!-- 1) Deficit Status -->
@@ -227,10 +227,10 @@
     </header>
 
     <!-- ════════ MAIN ════════ -->
-    <main class="flex-1 flex min-h-0 overflow-hidden">
+    <main class="flex flex-wrap items-start">
 
         <!-- ──── LEFT PANEL ──── -->
-        <section class="w-[56%] flex flex-col border-r border-orange-100" style="background:#FFF7F3;" aria-label="Rozpočet bez pojištění">
+        <section class="w-full md:w-[56%] border-r border-orange-100" style="background:#FFF7F3;" aria-label="Rozpočet bez pojištění">
             <div class="px-4 pt-3 pb-1.5 flex-shrink-0 flex items-center justify-between gap-2">
                 <h2 class="font-bold text-sm text-brand-stone">Škrty v rozpočtu</h2>
                 <p id="universe-subtitle" class="text-sm font-semibold text-brand-orange flex-shrink-0">
@@ -238,7 +238,7 @@
                 </p>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scroll px-4 pb-3">
+            <div class="px-4 pb-3">
 
                 <!-- Savings toggle card -->
                 <div class="budget-card flex flex-row items-center justify-between mb-2" style="background:#F8FAFC; border-color:#E2E8F0;">
@@ -344,8 +344,8 @@
         </section>
 
         <!-- ──── RIGHT PANEL ──── -->
-        <aside class="w-[44%] flex flex-col overflow-hidden" style="background:#F0FAF2;" aria-label="Dopady a pojištění">
-            <div class="flex-1 overflow-y-auto custom-scroll px-4 pt-3 pb-3 space-y-3">
+        <aside class="w-full md:w-[44%]" style="background:#F0FAF2;" aria-label="Dopady a pojištění">
+            <div class="px-4 pt-3 pb-3 space-y-3">
 
                 <!-- Section 1: Dynamic impacts -->
                 <div>
