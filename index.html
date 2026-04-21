@@ -70,6 +70,21 @@
         .impact-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; color: #303030; }
         .impact-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF6130; flex-shrink: 0; }
 
+        /* ── Impact entrance animation ── */
+        @keyframes impactSlideIn {
+            0% { opacity: 0; transform: translateX(18px); }
+            60% { opacity: 1; transform: translateX(-3px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes impactFlash {
+            0% { background-color: rgba(255,97,48,0.18); }
+            100% { background-color: transparent; }
+        }
+        .impact-item.is-new {
+            animation: impactSlideIn 0.35s ease-out, impactFlash 0.8s ease-out 0.15s;
+            border-radius: 6px;
+        }
+
         /* ── Scrollbar ── */
         .custom-scroll::-webkit-scrollbar { width: 3px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -151,7 +166,7 @@
     <main class="flex-1 flex min-h-0 overflow-hidden">
 
         <!-- ──── LEFT PANEL ──── -->
-        <section class="w-[56%] flex flex-col border-r border-gray-100 bg-white" aria-label="Rozpočet bez pojištění">
+        <section class="w-[56%] flex flex-col border-r border-orange-100" style="background:#FFF7F3;" aria-label="Rozpočet bez pojištění">
             <div class="px-4 pt-3 pb-1.5 flex-shrink-0 flex items-center justify-between gap-2">
                 <h2 class="font-bold text-sm text-brand-stone">Škrty v rozpočtu</h2>
                 <p id="universe-subtitle" class="text-sm font-semibold text-brand-orange flex-shrink-0">
@@ -265,7 +280,7 @@
         </section>
 
         <!-- ──── RIGHT PANEL ──── -->
-        <aside class="w-[44%] flex flex-col bg-gray-50 overflow-hidden" aria-label="Dopady a pojištění">
+        <aside class="w-[44%] flex flex-col overflow-hidden" style="background:#F0FAF2;" aria-label="Dopady a pojištění">
             <div class="flex-1 overflow-y-auto custom-scroll px-4 pt-3 pb-3 space-y-3">
 
                 <!-- Section 1: Dynamic impacts -->
@@ -283,28 +298,6 @@
                         <svg class="w-4 h-4 text-brand-apple flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
                         <h3 class="font-bold text-sm text-brand-stone">S pojištěním je rodina v bezpečí</h3>
                         <button class="info-trigger ml-auto" id="info-btn-right" aria-label="Detail pojištění" aria-describedby="tooltip-right" tabindex="0" style="width:36px;height:36px;background:#F0FDF4;color:#245375;border-color:#BBF7D0;font-size:13px;">i</button>
-                        <!-- Structured popover for insurance details -->
-                        <div id="tooltip-right" class="popover" role="tooltip" style="right:-8px; width:360px;">
-                            <button class="popover-close" aria-label="Zavřít" onclick="document.getElementById('tooltip-right').classList.remove('visible')">×</button>
-                            <p class="font-bold text-brand-stone text-base mb-3">Přehled sjednaných limitů</p>
-                            <div class="popover-section">Smrt</div>
-                            <div class="popover-row"><span class="popover-label">Základní smrt</span><span class="popover-value">10 000 Kč</span></div>
-                            <div class="popover-row"><span class="popover-label">Doplňková smrt kles.</span><span class="popover-value">5 040 000 Kč</span></div>
-                            <div class="popover-section">Invalidita</div>
-                            <div class="popover-row"><span class="popover-label">3. stupeň kles.</span><span class="popover-value">4 160 000 Kč</span></div>
-                            <div class="popover-row"><span class="popover-label">2. stupeň kles.</span><span class="popover-value">3 536 000 Kč</span></div>
-                            <div class="popover-row"><span class="popover-label">1. stupeň kles.</span><span class="popover-value">2 912 000 Kč</span></div>
-                            <div class="popover-section">Další krytí</div>
-                            <div class="popover-row"><span class="popover-label">PN od 29. dne</span><span class="popover-value">350 Kč/den</span></div>
-                            <div class="popover-row"><span class="popover-label">Velmi vážná onemocnění</span><span class="popover-value">300 000 Kč</span></div>
-                            <div class="popover-row"><span class="popover-label">Trvalé následky úrazu s progresí</span><span class="popover-value">900 000 Kč</span></div>
-                            <div class="popover-row"><span class="popover-label">Úvěrový balíček</span><span class="popover-value">3 500 000 Kč</span></div>
-                            <div class="popover-section">Rozpad pojistného plnění</div>
-                            <div class="popover-row"><span class="popover-label">Velmi vážná onemocnění</span><span class="popover-value">300 000 Kč jednorázově</span></div>
-                            <div class="popover-row popover-note"><span class="popover-label">Pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva</span></div>
-                            <div class="popover-row"><span class="popover-label">Pracovní neschopnost</span><span class="popover-value">350 Kč/den od 29. dne</span></div>
-                            <div class="popover-row popover-note"><span class="popover-label">Průměrně 9 660 Kč měsíčně</span></div>
-                        </div>
                     </div>
 
                     <p class="text-sm text-gray-500 mb-2">Z pojištění Alena čerpá průměrně <span class="font-bold text-brand-apple">39 660 Kč/měs.</span></p>
@@ -357,6 +350,29 @@
 </div>
 
 <span id="carousel-text" class="hidden"></span>
+
+<!-- ════════ FIXED POPOVER for insurance info ════════ -->
+<div id="tooltip-right" class="popover" role="tooltip" style="position:fixed; width:360px; z-index:70; top:auto; right:auto;">
+    <button class="popover-close" aria-label="Zavřít" onclick="document.getElementById('tooltip-right').classList.remove('visible')">×</button>
+    <p class="font-bold text-brand-stone text-base mb-3">Přehled sjednaných limitů</p>
+    <div class="popover-section">Smrt</div>
+    <div class="popover-row"><span class="popover-label">Základní smrt</span><span class="popover-value">10 000 Kč</span></div>
+    <div class="popover-row"><span class="popover-label">Doplňková smrt kles.</span><span class="popover-value">5 040 000 Kč</span></div>
+    <div class="popover-section">Invalidita</div>
+    <div class="popover-row"><span class="popover-label">3. stupeň kles.</span><span class="popover-value">4 160 000 Kč</span></div>
+    <div class="popover-row"><span class="popover-label">2. stupeň kles.</span><span class="popover-value">3 536 000 Kč</span></div>
+    <div class="popover-row"><span class="popover-label">1. stupeň kles.</span><span class="popover-value">2 912 000 Kč</span></div>
+    <div class="popover-section">Další krytí</div>
+    <div class="popover-row"><span class="popover-label">PN od 29. dne</span><span class="popover-value">350 Kč/den</span></div>
+    <div class="popover-row"><span class="popover-label">Velmi vážná onemocnění</span><span class="popover-value">300 000 Kč</span></div>
+    <div class="popover-row"><span class="popover-label">Trvalé následky úrazu s progresí</span><span class="popover-value">900 000 Kč</span></div>
+    <div class="popover-row"><span class="popover-label">Úvěrový balíček</span><span class="popover-value">3 500 000 Kč</span></div>
+    <div class="popover-section">Rozpad pojistného plnění</div>
+    <div class="popover-row"><span class="popover-label">Velmi vážná onemocnění</span><span class="popover-value">300 000 Kč jednorázově</span></div>
+    <div class="popover-row popover-note"><span class="popover-label">Pokrylo 70 000 Kč léčbu + 230 000 Kč rezerva</span></div>
+    <div class="popover-row"><span class="popover-label">Pracovní neschopnost</span><span class="popover-value">350 Kč/den od 29. dne</span></div>
+    <div class="popover-row popover-note"><span class="popover-label">Průměrně 9 660 Kč měsíčně</span></div>
+</div>
 
 <!-- ════════ JAVASCRIPT ════════ -->
 <script>
@@ -447,6 +463,7 @@
 
     var carouselImpacts = [];
     var savingsActive = false;
+    var previousImpactTexts = [];
 
     /* ── SVG constants ── */
     var SVG_W = 480, SVG_H = 70;
@@ -517,9 +534,11 @@
             impactsEmptyEl.classList.add('hidden');
             impactListEl.classList.remove('hidden');
             impactListEl.innerHTML = impacts.map(function(text) {
-                return '<div class="impact-item"><span class="impact-dot"></span><span>' + text + '</span></div>';
+                var isNew = previousImpactTexts.indexOf(text) === -1;
+                return '<div class="impact-item' + (isNew ? ' is-new' : '') + '"><span class="impact-dot"></span><span>' + text + '</span></div>';
             }).join('');
         }
+        previousImpactTexts = impacts.slice();
     }
 
     /* ── Main update ── */
@@ -708,7 +727,13 @@
         e.stopPropagation();
         var isOpen = tooltipRight.classList.contains('visible');
         closeAllTooltips();
-        if (!isOpen) tooltipRight.classList.add('visible');
+        if (!isOpen) {
+            var rect = infoBtnRight.getBoundingClientRect();
+            tooltipRight.style.top = (rect.bottom + 8) + 'px';
+            tooltipRight.style.right = (window.innerWidth - rect.right) + 'px';
+            tooltipRight.style.left = 'auto';
+            tooltipRight.classList.add('visible');
+        }
     });
 
     document.addEventListener('click', closeAllTooltips);
