@@ -88,6 +88,67 @@
             .impact-item.is-new { animation: none; }
         }
 
+        /* ── Consequence sequence ── */
+        @keyframes consequenceReveal {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .consequence-item {
+            opacity: 0;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: #FFF7ED;
+            border-left: 3px solid #F97316;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #303030;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .consequence-item.revealed {
+            animation: consequenceReveal 0.5s ease-out forwards;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .consequence-item.revealed { animation: none; opacity: 1; }
+        }
+        .consequence-headline {
+            font-size: 15px;
+            font-weight: 700;
+            color: #92400E;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: 10px;
+        }
+        .consequence-dim {
+            position: relative;
+        }
+        .consequence-dim::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.04);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #consequence-skip {
+            display: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9CA3AF;
+            cursor: pointer;
+            background: none;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 4px 12px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        #consequence-skip:hover { color: #6B7280; border-color: #D1D5DB; }
+
         /* ── Scrollbar ── */
         .custom-scroll::-webkit-scrollbar { width: 3px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -108,7 +169,7 @@
             <!-- 1) Deficit Status -->
             <div id="status-bad" class="flex-shrink-0 bg-brand-orange text-white px-4 py-2 rounded-xl transition-colors duration-300 relative flex items-center gap-3" style="min-width:210px">
                 <div class="min-w-0">
-                    <p class="text-xs font-semibold uppercase opacity-80 leading-tight">Bez pojištění zbývá vyřešit</p>
+                    <p id="status-label" class="text-xs font-semibold uppercase opacity-80 leading-tight">Bez pojištění zbývá vyřešit</p>
                     <p id="balance-val" class="text-xl font-black leading-tight mt-0.5">-14 000 Kč</p>
                 </div>
                 <button class="info-trigger" id="info-btn-left" aria-label="Jak jsme to spočítali" aria-describedby="tooltip-left" tabindex="0">i</button>
@@ -289,9 +350,18 @@
                 <!-- Section 1: Dynamic impacts -->
                 <div>
                     <h3 class="font-bold text-sm text-brand-stone mb-1.5">Co to znamená pro Alenu</h3>
+                    <!-- Consequence headline (hidden by default) -->
+                    <div id="consequence-headline" class="consequence-headline" style="display:none;">
+                        Rozpočet je sice vyrovnaný, ale za cenu těchto ústupků:
+                    </div>
                     <div id="impacts-panel" class="bg-white rounded-xl border border-gray-100 p-3 min-h-[40px]">
                         <p id="impacts-empty" class="text-sm text-gray-400 text-center">Zatím žádné škrty v rozpočtu.</p>
                         <div id="impact-list" class="hidden"></div>
+                        <!-- Consequence sequential list (hidden by default) -->
+                        <div id="consequence-list" style="display:none;"></div>
+                    </div>
+                    <div class="flex justify-end mt-1">
+                        <button id="consequence-skip">Přeskočit ›</button>
                     </div>
                 </div>
 
@@ -419,6 +489,7 @@
     /* ── DOM refs: status ── */
     var balanceEl = document.getElementById('balance-val');
     var statusBadEl = document.getElementById('status-bad');
+    var statusLabel = document.getElementById('status-label');
     var btnNext = document.getElementById('btn-next');
     var deficitDisplay = document.getElementById('deficit-display');
     var qualityLabel = document.getElementById('quality-label');
@@ -467,6 +538,17 @@
     var carouselImpacts = [];
     var savingsActive = false;
     var previousImpactTexts = [];
+
+    /* ── Consequence sequence state ── */
+    var consequenceTriggered = false;   /* has the sequence ever started? */
+    var consequenceRunning = false;     /* is it currently animating? */
+    var consequenceCompleted = false;   /* has it finished (or been skipped)? */
+    var sequenceTimers = [];            /* timeout IDs for cleanup */
+
+    /* ── DOM refs: consequence ── */
+    var consequenceHeadline = document.getElementById('consequence-headline');
+    var consequenceList = document.getElementById('consequence-list');
+    var consequenceSkip = document.getElementById('consequence-skip');
 
     /* ── SVG constants ── */
     var SVG_W = 480, SVG_H = 70;
@@ -600,19 +682,43 @@
         var remaining = TARGET_DEFICIT - totalSaved;
 
         if (remaining > 0) {
+            /* ── DEFICIT STATE ── */
+            /* If user moves sliders back to deficit while sequence was running, cancel it */
+            if (consequenceRunning) {
+                cancelConsequenceSequence();
+            }
+            /* Reset consequence state so it re-triggers on next balance */
+            if (consequenceCompleted || consequenceTriggered) {
+                consequenceTriggered = false;
+                consequenceCompleted = false;
+            }
             balanceEl.innerText = '-' + remaining.toLocaleString('cs-CZ') + ' Kč';
             statusBadEl.style.backgroundColor = '#FF6130';
-            btnNext.classList.remove('bg-brand-apple', 'cursor-pointer');
+            statusLabel.innerText = 'Bez pojištění zbývá vyřešit';
+            btnNext.classList.remove('bg-brand-stone', 'bg-brand-apple', 'cursor-pointer');
             btnNext.classList.add('bg-gray-300', 'cursor-not-allowed');
             btnNext.innerText = 'Ještě musíš rozpočet dořešit';
             btnNext.onclick = null;
-        } else {
-            balanceEl.innerText = 'VYROVNÁNO ✓';
-            statusBadEl.style.backgroundColor = '#245375';
-            btnNext.classList.remove('bg-gray-300', 'cursor-not-allowed');
-            btnNext.classList.add('bg-brand-apple', 'cursor-pointer');
-            btnNext.innerText = 'Pokračovat na shrnutí →';
-            btnNext.onclick = openModal;
+
+            /* Hide consequence elements, show normal impacts */
+            consequenceHeadline.style.display = 'none';
+            consequenceList.style.display = 'none';
+            consequenceSkip.style.display = 'none';
+            /* Clear inline display overrides so CSS classes work again */
+            impactsEmptyEl.style.display = '';
+            impactListEl.style.display = '';
+            /* Normal impacts visibility is handled by updateImpactsPanel */
+        } else if (!consequenceTriggered) {
+            /* ── FIRST TIME BALANCED → start consequence sequence ── */
+            consequenceTriggered = true;
+            startConsequenceSequence(impacts);
+        } else if (consequenceRunning) {
+            /* ── Sequence still running, user adjusted sliders but still balanced ── */
+            /* Just update the status text, don't restart */
+            balanceEl.innerText = 'Vyrovnáno — ale za jakou cenu?';
+        } else if (consequenceCompleted) {
+            /* ── Already completed the sequence, show ready state ── */
+            showReadyState();
         }
 
         deficitDisplay.innerText = (remaining > 0 ? remaining : 0).toLocaleString('cs-CZ');
@@ -635,6 +741,107 @@
 
         drawQualityCurve(qualityPct);
     }
+
+    /* ── Consequence sequence ── */
+    function startConsequenceSequence(impacts) {
+        consequenceRunning = true;
+        consequenceCompleted = false;
+
+        /* Status bar: warning/educational tone */
+        balanceEl.innerText = 'Vyrovnáno — ale za jakou cenu?';
+        statusBadEl.style.backgroundColor = '#92400E';
+        statusLabel.innerText = 'Rozpočet bez pojištění';
+
+        /* CTA: disabled during sequence */
+        btnNext.classList.remove('bg-brand-apple', 'bg-brand-stone', 'cursor-pointer');
+        btnNext.classList.add('bg-gray-300', 'cursor-not-allowed');
+        btnNext.innerText = 'Nejdřív si projdi dopady…';
+        btnNext.onclick = null;
+
+        /* Hide normal impact list, show consequence elements */
+        impactsEmptyEl.style.display = 'none';
+        impactListEl.style.display = 'none';
+        consequenceHeadline.style.display = '';
+        consequenceList.style.display = '';
+        consequenceSkip.style.display = '';
+
+        /* Pick top 3-5 most impactful items */
+        var topImpacts = impacts.slice(0, 5);
+
+        /* Build consequence items (hidden initially) */
+        consequenceList.innerHTML = topImpacts.map(function(text) {
+            return '<div class="consequence-item"><span style="flex-shrink:0;width:6px;height:6px;border-radius:50%;background:#F97316;"></span><span>' + text + '</span></div>';
+        }).join('');
+
+        var items = consequenceList.querySelectorAll('.consequence-item');
+        var totalItems = items.length;
+        /* Calculate delay per item so total is ~7-9s */
+        var delayPerItem = totalItems > 0 ? Math.min(1500, Math.floor(8000 / (totalItems + 1))) : 1500;
+
+        /* Clear any previous timers */
+        sequenceTimers.forEach(function(t) { clearTimeout(t); });
+        sequenceTimers = [];
+
+        /* Sequentially reveal each item */
+        items.forEach(function(item, i) {
+            var t = setTimeout(function() {
+                item.classList.add('revealed');
+            }, (i + 1) * delayPerItem);
+            sequenceTimers.push(t);
+        });
+
+        /* After all revealed, complete the sequence */
+        var finalTimer = setTimeout(function() {
+            finishConsequenceSequence();
+        }, (totalItems + 1) * delayPerItem + 500);
+        sequenceTimers.push(finalTimer);
+    }
+
+    function finishConsequenceSequence() {
+        consequenceRunning = false;
+        consequenceCompleted = true;
+        consequenceSkip.style.display = 'none';
+
+        /* Clear timers */
+        sequenceTimers.forEach(function(t) { clearTimeout(t); });
+        sequenceTimers = [];
+
+        /* Reveal any not-yet-revealed items */
+        var items = consequenceList.querySelectorAll('.consequence-item');
+        items.forEach(function(item) { item.classList.add('revealed'); });
+
+        showReadyState();
+    }
+
+    function cancelConsequenceSequence() {
+        consequenceRunning = false;
+        sequenceTimers.forEach(function(t) { clearTimeout(t); });
+        sequenceTimers = [];
+        consequenceHeadline.style.display = 'none';
+        consequenceList.style.display = 'none';
+        consequenceSkip.style.display = 'none';
+        /* Clear inline display overrides so CSS classes work again */
+        impactsEmptyEl.style.display = '';
+        impactListEl.style.display = '';
+        /* Allow re-triggering if they balance again */
+        consequenceTriggered = false;
+        consequenceCompleted = false;
+    }
+
+    function showReadyState() {
+        balanceEl.innerText = 'Vyrovnáno — ale za jakou cenu?';
+        statusBadEl.style.backgroundColor = '#92400E';
+        statusLabel.innerText = 'Rozpočet bez pojištění';
+        btnNext.classList.remove('bg-gray-300', 'cursor-not-allowed');
+        btnNext.classList.add('bg-brand-stone', 'cursor-pointer');
+        btnNext.innerText = 'Pokračovat na shrnutí →';
+        btnNext.onclick = openModal;
+    }
+
+    /* Skip button */
+    consequenceSkip.addEventListener('click', function() {
+        finishConsequenceSequence();
+    });
 
     /* ── Modal ── */
     function openModal() {
